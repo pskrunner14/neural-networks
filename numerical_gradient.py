@@ -1,5 +1,6 @@
 import numpy as np
 import math
+from numpy.linalg import norm
 
 class Neural_Network(object):
 
@@ -55,6 +56,10 @@ class Neural_Network(object):
     def sigmoidPrime(self,z):
         #Gradient of sigmoid
         return np.exp(-z) / ((1 + np.exp(-z)) ** 2)
+
+    """
+    NUMERICAL GRADIENT CHECKING
+    """
 
     #Helper Functions for interacting with other classes:
     def getParams(self):
@@ -116,6 +121,8 @@ def main():
 
     print(numgrad)
     print(grad)
+
+    print(norm(grad - numgrad) / norm(grad + numgrad))
 
 if __name__ == '__main__':
     main()
