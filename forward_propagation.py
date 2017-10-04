@@ -2,7 +2,7 @@ import numpy as np
 
 class Neural_Network(object):
     """
-    Basically on every layer, input is multiplied(dot product) by the weights(random) 
+    on every layer, input is multiplied(dot product) by the weights(random) 
     on that layer and then an activation function(sigmoid) is applied to get yHat(result)
     """
 
