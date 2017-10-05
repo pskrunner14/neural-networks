@@ -1,5 +1,5 @@
 import numpy as np
-import math
+from numpy import e
 from numpy.linalg import norm
 
 class Neural_Network(object):
@@ -77,17 +77,20 @@ class Neural_Network(object):
 
     def computeGradient(self, X, y):
         dJdW1, dJdW2 = self.costFunctionPrime(X, y)
+        #ravel means flatter so that all elements of matrix are in one row
+        #and then concat the two gradient matrices
         return np.concatenate((dJdW1.ravel(), dJdW2.ravel()))
 
 def computeNumericalGradient(N, X, y):
     paramsInitial = N.getParams()
     numgrad = np.zeros(paramsInitial.shape)
     perturb = np.zeros(paramsInitial.shape)
-    e = 1 * math.e - 4
+    epsilon = e - 4
 
-    for p in range(len(paramsInitial)):
+    for i in range(len(paramsInitial)):
         #set perturbation vector
-        perturb[p] = e
+        perturb[i] = epsilon
+        
         N.setParams(paramsInitial + perturb)
         loss2 = N.costFunction(X, y)
 
@@ -95,10 +98,10 @@ def computeNumericalGradient(N, X, y):
         loss1 = N.costFunction(X, y)
 
         #compute the numerical gradient
-        numgrad[p] = (loss2 - loss1) / (2 * e)
+        numgrad[i] = (loss2 - loss1) / (2 * epsilon)
 
         #return the value we changed back to zero
-        perturb[p] = 0
+        perturb[i] = 0
 
     #return params to original value
     N.setParams(paramsInitial)
