@@ -1,6 +1,12 @@
 import numpy as np
+from scipy import optimize
+from matplotlib.pyplot import plot
+from matplotlib.pyplot import grid
+from matplotlib.pyplot import xlabel
+from matplotlib.pyplot import ylabel
+from matplotlib.pyplot import show
+
 from numerical_gradient import Neural_Network
-import scipy
 
 class Trainer(object):
 
@@ -19,7 +25,7 @@ class Trainer(object):
     def costFunctionWrapper(self, params, X, y):
         self.N.setParams(params)
         cost = self.N.costFunction(X, y)
-        grad = self.N.computeGradients(X,y)
+        grad = self.N.computeGradient(X,y)
         
         return cost, grad
         
@@ -34,7 +40,7 @@ class Trainer(object):
         params0 = self.N.getParams()
 
         options = {'maxiter': 200, 'disp' : True}
-        _res = scipy.optimize.minimize(self.costFunctionWrapper, params0, jac=True, method='BFGS', \
+        _res = optimize.minimize(self.costFunctionWrapper, params0, jac=True, method='BFGS', \
                                  args=(X, y), options=options, callback=self.callbackF)
 
         self.N.setParams(_res.x)
@@ -55,6 +61,12 @@ def main():
     trainer = Trainer(network)
     trainer.train(X, y)
     
+    #plot the training data
+    plot(trainer.J)
+    grid(1)
+    xlabel('Iterations')
+    ylabel('Cost')
+    show()
 
 if __name__ == '__main__':
     main()
