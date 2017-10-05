@@ -26,7 +26,6 @@ class Trainer(object):
         self.N.setParams(params)
         cost = self.N.costFunction(X, y)
         grad = self.N.computeGradient(X,y)
-        
         return cost, grad
         
     def train(self, X, y):
@@ -40,9 +39,13 @@ class Trainer(object):
         params0 = self.N.getParams()
 
         options = {'maxiter': 200, 'disp' : True}
-        _res = optimize.minimize(self.costFunctionWrapper, params0, jac=True, method='BFGS', \
-                                 args=(X, y), options=options, callback=self.callbackF)
 
+        #BFGS implementation
+        #jac -> jacobian
+        #callback will help us to track the cost function value as we train the network
+        _res = optimize.minimize(self.costFunctionWrapper, params0, jac=True, method='BFGS', args=(X, y), options=options, callback=self.callbackF)
+
+        #here _res.x are the weights after the optimization/ training
         self.N.setParams(_res.x)
         self.optimizationResults = _res
 
