@@ -75,7 +75,7 @@ class Neural_Network(object):
         W2_end = W1_end + self.hiddenLayerSize*self.outputLayerSize
         self.W2 = np.reshape(params[W1_end:W2_end], (self.hiddenLayerSize, self.outputLayerSize))
 
-    def computeGradient(self, X, y):
+    def computeGradients(self, X, y):
         dJdW1, dJdW2 = self.costFunctionPrime(X, y)
         #ravel means flatter so that all elements of matrix are in one row
         #and then concat the two gradient matrices
@@ -120,7 +120,7 @@ def main():
     network = Neural_Network()
 
     numgrad = computeNumericalGradient(network, X, y)
-    grad = network.computeGradient(X, y)
+    grad = network.computeGradients(X, y)
 
     print(numgrad)
     print(grad)
