@@ -13,11 +13,11 @@ class Trainer():
     def __init__(self, dims=None, name='model', pretrained=False, lr=0.001):
         self._name = name
         if pretrained:
-            self._network = self._load_model()
+            self._load_model()
         elif dims is None:
             raise UserWarning('Model dims should not be none')
         else:
-            self._network = self._create_model(dims)
+            self._create_model(dims)
         self._lr = lr
         self._alpha = 0.9
         self._epsilon = 1e-8
@@ -32,7 +32,7 @@ class Trainer():
             model.append(Dense(dims[i - 1], dims[i]))
             model.append(ReLU())
         model.append(Dense(dims[-2], num_classes))
-        return model
+        self._network = model
 
     def _forward(self, X):
         """ Compute activations of all network layers by 
@@ -90,4 +90,4 @@ class Trainer():
 
     def _load_model(self):
         with open('models/{}.dill'.format(self._name), 'rb') as dill_file:
-            return dill.load(dill_file)
+            self._network = dill.load(dill_file)

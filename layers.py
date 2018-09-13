@@ -15,14 +15,14 @@ class Layer:
         """Here you can initialize layer parameters (if any) and auxiliary stuff."""
         pass
     
-    def forward(self, input):
+    def forward(self, A):
         """ Takes input data of shape [batch, input_units], 
             returns output data [batch, output_units]
         """
         # A dummy layer just returns whatever it gets as input.
-        return input
+        return A
 
-    def backward(self, input, grad_output, **kwargs):
+    def backward(self, A_prev, dZ, **kwargs):
         """ Performs a backpropagation step through the layer, with respect to the given input.
             To compute loss gradients w.r.t input, you need to apply chain rule (backprop):
             d loss / d x  = (d loss / d layer) * (d layer / d x)
@@ -32,11 +32,9 @@ class Layer:
             you also need to update them here using d loss / d layer
         """
         # The gradient of a dummy layer is precisely grad_output, but we'll write it more explicitly
-        num_units = input.shape[1]
-        
+        num_units = A_prev.shape[1]
         d_layer_d_input = np.eye(num_units)
-        
-        return np.dot(grad_output, d_layer_d_input) # chain rule
+        return np.dot(dZ, d_layer_d_input) # chain rule
 
 class Dense(Layer):
     
@@ -50,19 +48,20 @@ class Dense(Layer):
         self.g2_weights = np.zeros_like(self.weights)
         self.g2_biases = np.zeros_like(self.biases)
         
-    def forward(self, input):
+    def forward(self, A):
         """ Perform an affine transformation:
             f(x) = <W*x> + b
             
             input shape: [batch, input_units]
             output shape: [batch, output units]
         """
-        return np.dot(input, self.weights) + self.biases
+        return np.dot(A, self.weights) + self.biases
     
-    def backward(self, A_prev, dZ, optim='rmsprop', **kwargs):
+    def backward(self, A_prev, dZ, **kwargs):
         lr = kwargs['lr'] 
         alpha = kwargs['alpha']
         epsilon = kwargs['epsilon']
+        optim = kwargs.get('optim', 'rmsprop')
 
         # compute d f / d x = d f / d dense * d dense / d x
         # where d dense/ d x = weights transposed
@@ -102,11 +101,11 @@ class ReLU(Layer):
         """ReLU layer simply applies elementwise rectified linear unit to all inputs"""
         self.type = 'relu'
     
-    def forward(self, input):
+    def forward(self, A):
         """Apply elementwise ReLU to [batch, input_units] matrix"""
-        return np.maximum(0, input)
+        return np.maximum(0, A)
     
-    def backward(self, input, grad_output, **kwargs):
+    def backward(self, A_prev, dZ, **kwargs):
         """Compute gradient of loss w.r.t. ReLU input"""
-        relu_grad = input > 0
-        return grad_output * relu_grad
+        relu_grad = A_prev > 0
+        return dZ * relu_grad
