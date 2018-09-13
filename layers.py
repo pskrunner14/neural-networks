@@ -59,34 +59,41 @@ class Dense(Layer):
         """
         return np.dot(input, self.weights) + self.biases
     
-    def backward(self, input, grad_output, **kwargs):
+    def backward(self, A_prev, dZ, optim='rmsprop', **kwargs):
         lr = kwargs['lr'] 
         alpha = kwargs['alpha']
         epsilon = kwargs['epsilon']
 
         # compute d f / d x = d f / d dense * d dense / d x
         # where d dense/ d x = weights transposed
-        grad_input = np.dot(grad_output, self.weights.T)
+        grad_input = np.dot(dZ, self.weights.T)
 
         # dW = (1/m)*np.dot(dZ,np.transpose(A_prev))
         # db = (1/m)*np.sum(dZ,axis=1,keepdims=True)
         # dA_prev = np.dot(np.transpose(W),dZ)
         
-        m = input.shape[0]
+        m = A_prev.shape[0]
         
         # compute gradient w.r.t. weights and biases
-        grad_weights = np.dot(input.T, grad_output) / m
-        grad_biases = grad_output.mean(axis=0)
+        grad_weights = np.dot(A_prev.T, dZ) / m
+        grad_biases = dZ.sum(axis=0) / m
         
         assert grad_weights.shape == self.weights.shape and grad_biases.shape == self.biases.shape
         
-        self.g2_weights = (alpha * self.g2_weights) + (1 - alpha) * np.square(grad_weights)
-        self.g2_biases = (alpha * self.g2_biases) + (1 - alpha) * np.square(grad_biases)
-        
-        # Here we perform a stochastic gradient descent step. 
-        # Later on, you can try replacing that with something better.
-        self.weights = self.weights - ((lr / np.sqrt(self.g2_weights + epsilon)) * grad_weights)
-        self.biases = self.biases - ((lr / np.sqrt(self.g2_biases + epsilon)) * grad_biases)
+        update_weights = lr * grad_weights
+        update_biases = lr * grad_biases
+
+        if optim == 'rmsprop':
+            self.g2_weights = (alpha * self.g2_weights) + (1 - alpha) * np.square(grad_weights)
+            self.g2_biases = (alpha * self.g2_biases) + (1 - alpha) * np.square(grad_biases)
+            
+            # Here we perform a stochastic gradient descent step. 
+            # Later on, you can try replacing that with something better.
+            self.weights -= update_weights / np.sqrt(self.g2_weights + epsilon)
+            self.biases -= update_biases / np.sqrt(self.g2_biases + epsilon)
+        elif optim == 'gd':
+            self.weights -= update_weights
+            self.biases -= update_biases
 
         return grad_input
     
