@@ -5,7 +5,6 @@ import argparse
 
 from data import DataLoader
 from train import Trainer
-from layers import Dense, ReLU
 
 np.random.seed(42)
 
@@ -26,14 +25,11 @@ def main():
 
     X_train, y_train, X_val, y_val, _, _ = DataLoader.load_dataset(flatten=True)
 
-    model = []
-    model.append(Dense(X_train.shape[1], 100))
-    model.append(ReLU())
-    model.append(Dense(100, 200))
-    model.append(ReLU())
-    model.append(Dense(200, 10))
+    input_dim = X_train.shape[1]
+    num_classes = 10
+    dims = [input_dim, 100, 200, 200, num_classes]
 
-    trainer = Trainer(model, lr=args.lr)
+    trainer = Trainer(dims=dims, lr=args.lr)
 
     train_log = []
     val_log = []

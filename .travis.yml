@@ -1,0 +1,16 @@
+dist: trusty
+sudo: false
+language: python
+cache: pip
+python:
+  - "3.6"
+
+# command to install dependencies
+install:
+  - pip install -U pip
+  - pip -q install -r requirements.txt
+
+# command to run tests
+script: 
+  # Unit test
+  - nosetests --with-coverage --cover-erase -w tests --cover-inclusive --cover-package=./tests

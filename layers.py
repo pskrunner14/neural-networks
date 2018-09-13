@@ -22,7 +22,7 @@ class Layer:
         # A dummy layer just returns whatever it gets as input.
         return input
 
-    def backward(self, input, grad_output):
+    def backward(self, input, grad_output, **kwargs):
         """ Performs a backpropagation step through the layer, with respect to the given input.
             To compute loss gradients w.r.t input, you need to apply chain rule (backprop):
             d loss / d x  = (d loss / d layer) * (d layer / d x)
@@ -39,6 +39,7 @@ class Layer:
         return np.dot(grad_output, d_layer_d_input) # chain rule
 
 class Dense(Layer):
+    
     def __init__(self, input_units, output_units):
         """ A dense layer is a layer which performs a learned affine transformation:
             f(x) = <W*x> + b
@@ -58,12 +59,18 @@ class Dense(Layer):
         """
         return np.dot(input, self.weights) + self.biases
     
-    def backward(self, input, grad_output, lr=0.001, alpha=0.9, epsilon=1e-8):
-        
+    def backward(self, input, grad_output, **kwargs):
+        lr = kwargs['lr'] 
+        alpha = kwargs['alpha']
+        epsilon = kwargs['epsilon']
+
         # compute d f / d x = d f / d dense * d dense / d x
         # where d dense/ d x = weights transposed
         grad_input = np.dot(grad_output, self.weights.T)
-        grad_input = grad_input
+
+        # dW = (1/m)*np.dot(dZ,np.transpose(A_prev))
+        # db = (1/m)*np.sum(dZ,axis=1,keepdims=True)
+        # dA_prev = np.dot(np.transpose(W),dZ)
         
         m = input.shape[0]
         
@@ -92,7 +99,7 @@ class ReLU(Layer):
         """Apply elementwise ReLU to [batch, input_units] matrix"""
         return np.maximum(0, input)
     
-    def backward(self, input, grad_output, lr=0.001, alpha=0.9, epsilon=1e-8):
+    def backward(self, input, grad_output, **kwargs):
         """Compute gradient of loss w.r.t. ReLU input"""
         relu_grad = input > 0
         return grad_output * relu_grad

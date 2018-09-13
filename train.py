@@ -1,24 +1,38 @@
 from __future__ import print_function
+import os
 import numpy as np
 import dill
 
 from loss import Losses
+from layers import Dense, ReLU
 
 np.random.seed(42)
 
 class Trainer():
 
-    def __init__(self, network, name='model', pretrained=False, lr=0.001, alpha=0.9, epsilon=1e-8):
+    def __init__(self, dims=None, name='model', pretrained=False, lr=0.001):
         self._name = name
         if pretrained:
             self._network = self._load_model()
-        elif network is None:
-            raise UserWarning('Network should not be none')
+        elif dims is None:
+            raise UserWarning('Model dims should not be none')
         else:
-            self._network = network
+            self._network = self._create_model(dims)
         self._lr = lr
-        self._alpha = alpha
-        self._epsilon = epsilon
+        self._alpha = 0.9
+        self._epsilon = 1e-8
+
+    def _create_model(self, dims):
+        model = []
+        input_shape = dims[0]
+        num_classes = dims[-1]
+        model.append(Dense(input_shape, dims[1]))
+        model.append(ReLU())
+        for i in range(2, len(dims) - 1):
+            model.append(Dense(dims[i - 1], dims[i]))
+            model.append(ReLU())
+        model.append(Dense(dims[-2], num_classes))
+        return model
 
     def _forward(self, X):
         """ Compute activations of all network layers by 
@@ -68,8 +82,11 @@ class Trainer():
         return np.mean(loss)
 
     def save_model(self):
+        if not os.path.isdir('models'):
+            os.mkdir('models')
         with open('models/{}.dill'.format(self._name), 'wb') as dill_file:
             dill.dump(self._network, dill_file)
+        print('Model saved to `models/{}.dill`'.format(self._name))
 
     def _load_model(self):
         with open('models/{}.dill'.format(self._name), 'rb') as dill_file:
