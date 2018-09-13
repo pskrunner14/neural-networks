@@ -40,11 +40,11 @@ class Trainer():
         for each layer. Make sure last activation corresponds to network logits.
         """
         activations = []
-        input = X
+        A = X
         
         for layer in self._network:
-            activations.append(layer.forward(input))
-            input = activations[-1]
+            activations.append(layer.forward(A))
+            A = activations[-1]
             
         assert len(activations) == len(self._network)
         return activations
