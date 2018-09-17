@@ -57,19 +57,12 @@ class Dense(Layer):
             input shape: [batch, input_units]
             output shape: [batch, output units]
         """
-        print(A.shape)
-        print(self.weights.shape)
-        print(np.mean(A == 0.0))
         m, n, k = A.shape[0], A.shape[1], self.weights.shape[1]
         a = A.flatten()
         b = self.weights.flatten()
-        print(a.shape)
-        print(b.shape)
+        assert b.shape[0] == n * k
         c = np.zeros(m * k)
-        print(np.mean(a == 0.0))
-        print(np.mean(b == 0.0))
         cuda_mat_mul(a, b, c, m, n, k)
-        print(np.mean(c == 0.0))
         bias = self.biases
         repeats = (len(c) / len(bias))
         bias = np.repeat(bias, repeats, axis=0).flatten()
@@ -77,18 +70,14 @@ class Dense(Layer):
         output = np.zeros_like(c)
         cuda_mat_sum(c, bias, output, m, k)
         output = output.reshape((m, k))
-        output0 = np.dot(A, self.weights)
-        output1 = output0 + self.biases
-        assert output.shape == output1.shape
-        exit(0)
-        return output1
+        return output
         # return output.reshape((m, k))
 
     def backward(self, A_prev, dZ, **kwargs):
         lr = kwargs['lr'] 
         alpha = kwargs['alpha']
         epsilon = kwargs['epsilon']
-        optim = kwargs.get('optim', 'gd')
+        optim = kwargs.get('optim', 'rmsprop')
 
         # compute d f / d x = d f / d dense * d dense / d x
         # where d dense/ d x = weights transposed
