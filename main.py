@@ -10,7 +10,7 @@ np.random.seed(42)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Training Configuration')
-    parser.add_argument('--epochs', type=int, default=20, dest='epochs',
+    parser.add_argument('--epochs', type=int, default=10, dest='epochs',
                         help='Number of iterations for training')
     parser.add_argument('--batch-size', type=int, default=64, dest='batch_size', 
                         help='Batch size for one epoch in training')
@@ -23,7 +23,7 @@ def parse_args():
 def main():
     args = parse_args()
 
-    X_train, y_train, X_val, y_val, _, _ = DataLoader.load_dataset(flatten=True)
+    X_train, y_train, X_val, y_val, X_test, y_test = DataLoader.load_dataset(flatten=True)
 
     input_dim = X_train.shape[1]
     num_classes = 10
@@ -35,8 +35,8 @@ def main():
     val_log = []
 
     for epoch in range(args.epochs):
-        for x_batch,y_batch in DataLoader.iterate_minibatches(X_train, y_train, batchsize=args.batch_size, shuffle=True):
-            trainer.train_model(x_batch, y_batch)
+        for x_batch, y_batch in DataLoader.iterate_minibatches(X_train, y_train, batchsize=args.batch_size, shuffle=True):
+            trainer.fit(x_batch, y_batch)
         
         train_log.append(np.mean(trainer.predict(X_train) == y_train))
         val_log.append(np.mean(trainer.predict(X_val) == y_val))
@@ -50,6 +50,10 @@ def main():
             plt.legend(loc='best')
             plt.grid()
             plt.show()
+
+    print('\nTesting on {} samples'.format(len(X_test)))
+    accuracy = np.mean(trainer.predict(X_test) == y_test) * 100
+    print('Test accuracy: {:.2f}%\n'.format(accuracy))
 
     trainer.save_model()
 

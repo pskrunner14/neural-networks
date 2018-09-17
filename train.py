@@ -17,12 +17,12 @@ class Trainer():
         elif dims is None:
             raise UserWarning('Model dims should not be none')
         else:
-            self._create_model(dims)
+            self._create(dims)
         self._lr = lr
-        self._alpha = 0.9
+        self._alpha = 0.99
         self._epsilon = 1e-8
 
-    def _create_model(self, dims):
+    def _create(self, dims):
         model = []
         input_shape = dims[0]
         num_classes = dims[-1]
@@ -56,7 +56,7 @@ class Trainer():
         logits = self._forward(X)[-1]
         return logits.argmax(axis=-1)
 
-    def train_model(self, X, y):
+    def fit(self, X, y):
         """ Train your network on a given batch of X and y.
         You first need to run forward to get all layer activations.
         Then you can run layer.backward going from last to first layer.
