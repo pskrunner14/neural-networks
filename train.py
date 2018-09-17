@@ -41,7 +41,6 @@ class Trainer():
         """
         activations = []
         A = X
-        
         for layer in self._network:
             activations.append(layer.forward(A))
             A = activations[-1]

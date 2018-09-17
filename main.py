@@ -27,7 +27,7 @@ def main():
 
     input_dim = X_train.shape[1]
     num_classes = 10
-    dims = [input_dim, 100, 200, 200, num_classes]
+    dims = [input_dim, 10, 20, 20, num_classes]
 
     trainer = Trainer(dims=dims, lr=args.lr)
 
