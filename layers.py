@@ -5,6 +5,22 @@ from gpu import cuda_mat_mul, cuda_mat_sum
 
 np.random.seed(42)
 
+def compute_dot_prod(a, b):
+    m, n, k = a.shape[0], a.shape[1], b.shape[1]
+    a = a.flatten()
+    b = b.flatten()
+    c = np.zeros(m * k)
+    cuda_mat_mul(a, b, c, m, n, k)
+    return c.reshape((m, k))
+
+def compute_elem_wise_sum(a, b):
+    m, n = a.shape[0], a.shape[1]
+    a = a.flatten()
+    b = b.flatten()
+    c = np.zeros_like(a)
+    cuda_mat_sum(a, b, c, m, n)
+    return c.reshape((m, n))
+
 class Layer:
     
     """ A building block. Each layer is capable of performing two things:
@@ -57,27 +73,11 @@ class Dense(Layer):
             input shape: [batch, input_units]
             output shape: [batch, output units]
         """
-        m, n, k = A.shape[0], A.shape[1], self.weights.shape[1]
-        a = A.flatten()
-        b = self.weights.flatten()
-        c = np.zeros(m * k)
-        cuda_mat_mul(a, b, c, m, n, k)
+        Wx = compute_dot_prod(A, self.weights)
         bias = self.biases
-        bias = np.repeat(bias, (len(c) / len(bias)), axis=0).flatten()
-        output = np.zeros_like(c)
-        cuda_mat_sum(c, bias, output, m, k)
-        output = output.reshape((m, k))
-        
-        # output1 = np.dot(A, self.weights) + self.biases
-        
-        # if not np.allclose(output, output1, rtol=1e-2):
-        #     print(np.mean(output == output1))
-        #     print(output1 * np.not_equal(output, output1))
-        #     print(output * np.not_equal(output, output1))
-        #     print(output.astype('float64') - output1)
-        #     exit(0)
-        return output
-        # return output.reshape((m, k))
+        bias = np.repeat(bias, Wx.shape[0], axis=0)
+        Z = compute_elem_wise_sum(Wx, bias)
+        return Z
 
     def backward(self, A_prev, dZ, **kwargs):
         lr = kwargs['lr'] 
@@ -87,16 +87,11 @@ class Dense(Layer):
 
         # compute d f / d x = d f / d dense * d dense / d x
         # where d dense/ d x = weights transposed
-        grad_input = np.dot(dZ, self.weights.T)
-
-        # dW = (1/m)*np.dot(dZ,np.transpose(A_prev))
-        # db = (1/m)*np.sum(dZ,axis=1,keepdims=True)
-        # dA_prev = np.dot(np.transpose(W),dZ)
-        
+        grad_input = compute_dot_prod(dZ, self.weights.T)
         m = A_prev.shape[0]
         
         # compute gradient w.r.t. weights and biases
-        grad_weights = np.dot(A_prev.T, dZ) / m
+        grad_weights = compute_dot_prod(A_prev.T, dZ) / m
         grad_biases = dZ.sum(axis=0) / m
         
         assert grad_weights.shape == self.weights.shape and grad_biases.shape == self.biases.shape

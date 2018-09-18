@@ -14,7 +14,7 @@ def parse_args():
                         help='Number of iterations for training')
     parser.add_argument('--batch-size', type=int, default=64, dest='batch_size', 
                         help='Batch size for one epoch in training')
-    parser.add_argument('--lr', type=float, default=0.001, dest='lr',
+    parser.add_argument('--lr', type=float, default=0.005, dest='lr',
                         help='Initial learning rate')
     parser.add_argument('--plot', type=bool, default=False, dest='plot',
                         help='Flag that indicates whether plot the accuracy during training')
