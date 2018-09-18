@@ -60,16 +60,22 @@ class Dense(Layer):
         m, n, k = A.shape[0], A.shape[1], self.weights.shape[1]
         a = A.flatten()
         b = self.weights.flatten()
-        assert b.shape[0] == n * k
         c = np.zeros(m * k)
         cuda_mat_mul(a, b, c, m, n, k)
         bias = self.biases
-        repeats = (len(c) / len(bias))
-        bias = np.repeat(bias, repeats, axis=0).flatten()
-        assert c.shape == bias.shape
+        bias = np.repeat(bias, (len(c) / len(bias)), axis=0).flatten()
         output = np.zeros_like(c)
         cuda_mat_sum(c, bias, output, m, k)
         output = output.reshape((m, k))
+        
+        # output1 = np.dot(A, self.weights) + self.biases
+        
+        # if not np.allclose(output, output1, rtol=1e-2):
+        #     print(np.mean(output == output1))
+        #     print(output1 * np.not_equal(output, output1))
+        #     print(output * np.not_equal(output, output1))
+        #     print(output.astype('float64') - output1)
+        #     exit(0)
         return output
         # return output.reshape((m, k))
 

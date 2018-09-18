@@ -9,8 +9,6 @@
 
 #include <iostream>
 #include <math.h>
-#include <cuda.h>
-#include <cuda_runtime_api.h>
 #include "utils/devices.cu"
 #include "utils/utils.cpp"
 
