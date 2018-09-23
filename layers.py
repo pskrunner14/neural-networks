@@ -9,16 +9,16 @@ def compute_dot_prod(a, b):
     m, n, k = a.shape[0], a.shape[1], b.shape[1]
     a = a.flatten()
     b = b.flatten()
-    c = np.zeros(m * k)
-    cuda_mat_mul(a, b, c, m, n, k)
+    c = np.zeros(shape=(m * k), dtype=np.float32)
+    cuda_mat_mul(a.astype(np.float32), b.astype(np.float32), c, m, n, k)
     return c.reshape((m, k))
 
 def compute_elem_wise_sum(a, b):
     m, n = a.shape[0], a.shape[1]
     a = a.flatten()
     b = b.flatten()
-    c = np.zeros_like(a)
-    cuda_mat_sum(a, b, c, m, n)
+    c = np.zeros_like(a=a, dtype=np.float32)
+    cuda_mat_sum(a.astype(np.float32), b.astype(np.float32), c, m, n)
     return c.reshape((m, n))
 
 class Layer:

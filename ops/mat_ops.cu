@@ -17,14 +17,14 @@
 /**
 * Calculates element-wise sum of two matrices (using parallel threads on CUDA capable device)
 *
-* @param a the double pointer to first input array
-* @param b the double pointer to second input array
-* @param c the double pointer to output array
+* @param a the float pointer to first input array
+* @param b the float pointer to second input array
+* @param c the float pointer to output array
 * @param m the no. of rows in the arrays
 * @param n the no. of cols in the arrays
 * @return void
 */
-__global__ void matSum(double *a, double *b, double *c, int m, int n) {
+__global__ void matSum(float *a, float *b, float *c, int m, int n) {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -35,14 +35,14 @@ __global__ void matSum(double *a, double *b, double *c, int m, int n) {
 /**
 * Calculates element-wise product of two matrices (using parallel threads on CUDA capable device)
 *
-* @param a the double pointer to first input array
-* @param b the double pointer to second input array
-* @param c the double pointer to output array
+* @param a the float pointer to first input array
+* @param b the float pointer to second input array
+* @param c the float pointer to output array
 * @param m the no. of rows in the arrays
 * @param n the no. of cols in the arrays
 * @return void
 */
-__global__ void matProd(double *a, double *b, double *c, int m, int n) {
+__global__ void matProd(float *a, float *b, float *c, int m, int n) {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -53,19 +53,19 @@ __global__ void matProd(double *a, double *b, double *c, int m, int n) {
 /**
 * Calculates dot-product of two matrices (using parallel threads on CUDA capable device)
 *
-* @param a the double pointer to first input array
-* @param b the double pointer to second input array
-* @param c the double pointer to output array
+* @param a the float pointer to first input array
+* @param b the float pointer to second input array
+* @param c the float pointer to output array
 * @param m the no. rows in a(m x n) and c(m x k)
 * @param n the no. cols in a(m x n) and rows in b(n x k)
 * @param k the no. cols in b(n x k) and c(m x k)
 * @return void
 */
-__global__ void matMul(double *a, double *b, double *c, int m, int n, int k) {
+__global__ void matMul(float *a, float *b, float *c, int m, int n, int k) {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
-    double sum = 0;
+    float sum = 0;
 
     if (row < m && col < k) {
         for (int i = 0; i < n; i++)
@@ -76,15 +76,15 @@ __global__ void matMul(double *a, double *b, double *c, int m, int n, int k) {
 
 extern "C" {
 
-    void cuda_mat_sum(double *a, double *b, double *c, int m, int n) {
-        double *d_a, *d_b, *d_c;
+    void cuda_mat_sum(float *a, float *b, float *c, int m, int n) {
+        float *d_a, *d_b, *d_c;
 
-        cudaMallocManaged(&d_a, (m * n) * sizeof(double));
-        cudaMallocManaged(&d_b, (m * n) * sizeof(double));
-        cudaMallocManaged(&d_c, (m * n) * sizeof(double));
+        cudaMallocManaged(&d_a, (m * n) * sizeof(float));
+        cudaMallocManaged(&d_b, (m * n) * sizeof(float));
+        cudaMallocManaged(&d_c, (m * n) * sizeof(float));
 
-        cudaMemcpy(d_a, a, (m * n) * sizeof(double), cudaMemcpyHostToDevice);
-        cudaMemcpy(d_b, b, (m * n) * sizeof(double), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_a, a, (m * n) * sizeof(float), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_b, b, (m * n) * sizeof(float), cudaMemcpyHostToDevice);
 
         unsigned int grid_rows = sqrt(BLOCK_SIZE);
         unsigned int grid_cols = m / grid_rows;
@@ -95,22 +95,22 @@ extern "C" {
         matSum<<<dimGrid, dimBlock>>>(d_a, d_b, d_c, m, n);
         cudaDeviceSynchronize();
 
-        cudaMemcpy(c, d_c, (m * n) * sizeof(double), cudaMemcpyDeviceToHost);
+        cudaMemcpy(c, d_c, (m * n) * sizeof(float), cudaMemcpyDeviceToHost);
 
         cudaFree(d_a);
         cudaFree(d_b);
         cudaFree(d_c);
     }
 
-    void cuda_mat_prod(double *a, double *b, double *c, int m, int n) {
-        double *d_a, *d_b, *d_c;
+    void cuda_mat_prod(float *a, float *b, float *c, int m, int n) {
+        float *d_a, *d_b, *d_c;
 
-        cudaMallocManaged(&d_a, (m * n) * sizeof(double));
-        cudaMallocManaged(&d_b, (m * n) * sizeof(double));
-        cudaMallocManaged(&d_c, (m * n) * sizeof(double));
+        cudaMallocManaged(&d_a, (m * n) * sizeof(float));
+        cudaMallocManaged(&d_b, (m * n) * sizeof(float));
+        cudaMallocManaged(&d_c, (m * n) * sizeof(float));
 
-        cudaMemcpy(d_a, a, (m * n) * sizeof(double), cudaMemcpyHostToDevice);
-        cudaMemcpy(d_b, b, (m * n) * sizeof(double), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_a, a, (m * n) * sizeof(float), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_b, b, (m * n) * sizeof(float), cudaMemcpyHostToDevice);
 
         unsigned int grid_rows = sqrt(BLOCK_SIZE);
         unsigned int grid_cols = m / grid_rows;
@@ -121,22 +121,22 @@ extern "C" {
         matProd<<<dimGrid, dimBlock>>>(d_a, d_b, d_c, m, n);
         cudaDeviceSynchronize();
 
-        cudaMemcpy(c, d_c, (m * n) * sizeof(double), cudaMemcpyDeviceToHost);
+        cudaMemcpy(c, d_c, (m * n) * sizeof(float), cudaMemcpyDeviceToHost);
 
         cudaFree(d_a);
         cudaFree(d_b);
         cudaFree(d_c);
     }
  
-    void cuda_mat_mul(double *a, double *b, double *c, int m, int n, int k) {
-        double *d_a, *d_b, *d_c;
+    void cuda_mat_mul(float *a, float *b, float *c, int m, int n, int k) {
+        float *d_a, *d_b, *d_c;
 
-        cudaMallocManaged(&d_a, (m * n) * sizeof(double));
-        cudaMallocManaged(&d_b, (n * k) * sizeof(double));
-        cudaMallocManaged(&d_c, (m * k) * sizeof(double));
+        cudaMallocManaged(&d_a, (m * n) * sizeof(float));
+        cudaMallocManaged(&d_b, (n * k) * sizeof(float));
+        cudaMallocManaged(&d_c, (m * k) * sizeof(float));
 
-        cudaMemcpy(d_a, a, (m * n) * sizeof(double), cudaMemcpyHostToDevice);
-        cudaMemcpy(d_b, b, (n * k) * sizeof(double), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_a, a, (m * n) * sizeof(float), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_b, b, (n * k) * sizeof(float), cudaMemcpyHostToDevice);
 
         unsigned int grid_rows = sqrt(BLOCK_SIZE);
         unsigned int grid_cols = m / grid_rows;
@@ -147,7 +147,7 @@ extern "C" {
         matMul<<<dimGrid, dimBlock>>>(d_a, d_b, d_c, m, n, k);
         cudaDeviceSynchronize();
     
-        cudaMemcpy(c, d_c, (m * k) * sizeof(double), cudaMemcpyDeviceToHost);
+        cudaMemcpy(c, d_c, (m * k) * sizeof(float), cudaMemcpyDeviceToHost);
 
         cudaFree(d_a);
         cudaFree(d_b);
