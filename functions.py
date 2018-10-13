@@ -3,28 +3,29 @@ import numpy as np
 from ops.cpu_ops import (
     cpu_matmul,
     cpu_matsum,
-    cpu_matprod,
+    cpu_elemwise_prod,
     cpu_elemwise_max
 )
 from ops.numba_ops import (
     numba_matmul,
     numba_matsum,
-    numba_matprod,
+    numba_elemwise_prod,
     numba_elemwise_max
 )
 from ops.cuda_c_ops import (
     cuda_matmul,
     cuda_matsum,
-    cuda_matprod
+    cuda_elemwise_prod,
+    cuda_elemwise_max
 )
 
 """ Computation functions.
 
 Offload computation efficiently on respective device.
 """
-def compute_matmul(a, b, method='cpu'):
+def matmul(a, b, method='cpu'):
     if method == 'cpu':
-        pass
+        return cpu_matmul(a, b)
     elif method == 'cuda_c':
         m, n, k = a.shape[0], a.shape[1], b.shape[1]
         a = a.flatten()
@@ -33,13 +34,13 @@ def compute_matmul(a, b, method='cpu'):
         cuda_matmul(a.astype(np.float32), b.astype(np.float32), c, m, n, k)
         return c.reshape((m, k))
     elif method == 'numba':
-        pass
+        return numba_matmul(a, b)
     else:
         raise UserWarning('Unknown computation method.')
 
-def compute_matsum(a, b, method='cpu'):
+def matsum(a, b, method='cpu'):
     if method == 'cpu':
-        pass
+        return cpu_matsum(a, b)
     elif method == 'cuda_c':
         m, n = a.shape[0], a.shape[1]
         a = a.flatten()
@@ -48,25 +49,33 @@ def compute_matsum(a, b, method='cpu'):
         cuda_matsum(a.astype(np.float32), b.astype(np.float32), c, m, n)
         return c.reshape((m, n))
     elif method == 'numba':
-        pass
+        return numba_matsum(a, b)
     else:
         raise UserWarning('Unknown computation method.')
 
-def compute_matprod(a, b, method='cpu'):
+def elemwise_prod(a, value, method='cpu'):
     if method == 'cpu':
-        pass
+        return cpu_elemwise_prod(a, value)
     elif method == 'cuda_c':
-        pass
+        m, n = a.shape[0], a.shape[1]
+        a = a.flatten()
+        c = np.zeros_like(a=a, dtype=np.float32)
+        cuda_elemwise_prod(a.astype(np.float32), value, c, m, n)
+        return c.reshape((m, n))
     elif method == 'numba':
-        pass
+        return numba_elemwise_prod(a, value)
     else:
         raise UserWarning('Unknown computation method.')
 
-def compute_elemwise_max(a, value, method='cpu'):
+def elemwise_max(a, value, method='cpu'):
     if method == 'cpu':
-        pass
+        return cpu_elemwise_max(a, value)
     elif method == 'cuda_c':
-        pass
+        m, n = a.shape[0], a.shape[1]
+        a = a.flatten()
+        c = np.zeros_like(a=a, dtype=np.float32)
+        cuda_elemwise_max(a.astype(np.float32), value, c, m, n)
+        return c.reshape((m, n))
     elif method == 'numba':
         pass
     else:

@@ -15,18 +15,20 @@ Performs a learned affine transformation:
 """
 class Dense():
     
-    def __init__(self, input_units, output_units):
+    def __init__(self, input_units, output_units, method='cpu'):
         # initialize weights with small random numbers. We use xavier initialization
         self.weights = np.random.randn(input_units, output_units) * np.sqrt(2. / (input_units + output_units))
         self.biases = np.zeros(output_units)
         self.g2_weights = np.zeros_like(self.weights)
         self.g2_biases = np.zeros_like(self.biases)
+
+        self.method = method
         
     def forward(self, A):
-        Wx = F.compute_matmul(A, self.weights)
+        Wx = F.matmul(A, self.weights, method=self.method)
         bias = self.biases
         bias = np.repeat(bias, Wx.shape[0], axis=0)
-        Z = F.compute_matsum(Wx, bias)
+        Z = F.matsum(Wx, bias, method=self.method)
         return Z
 
     def backward(self, A_prev, dZ, **kwargs):
@@ -37,11 +39,11 @@ class Dense():
 
         # compute d f / d x = d f / d dense * d dense / d x
         # where d dense/ d x = weights transposed
-        grad_input = F.compute_matmul(dZ, self.weights.T)
+        grad_input = F.matmul(dZ, self.weights.T, method=self.method)
         m = A_prev.shape[0]
         
         # compute gradient w.r.t. weights and biases
-        grad_weights = F.compute_matmul(A_prev.T, dZ) / m
+        grad_weights = F.matmul(A_prev.T, dZ, method=self.method) / m
         grad_biases = dZ.sum(axis=0) / m
         
         assert grad_weights.shape == self.weights.shape and grad_biases.shape == self.biases.shape
@@ -72,8 +74,9 @@ Applies elementwise rectified linear unit to all inputs:
 """
 class ReLU():
 
-    def __init__(self):
+    def __init__(self, method='cpu'):
         self.type = 'relu'
+        self.method = method
     
     def forward(self, A):
         return np.maximum(0, A)
