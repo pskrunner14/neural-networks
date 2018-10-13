@@ -1,29 +1,9 @@
 from __future__ import print_function
 import numpy as np
 
-from gpu import cuda_mat_mul, cuda_mat_sum
+import functions as F
 
 np.random.seed(42)
-
-"""
-GPU Computation Methods
-"""
-
-def compute_dot_prod(a, b):
-    m, n, k = a.shape[0], a.shape[1], b.shape[1]
-    a = a.flatten()
-    b = b.flatten()
-    c = np.zeros(shape=(m * k), dtype=np.float32)
-    cuda_mat_mul(a.astype(np.float32), b.astype(np.float32), c, m, n, k)
-    return c.reshape((m, k))
-
-def compute_elem_wise_sum(a, b):
-    m, n = a.shape[0], a.shape[1]
-    a = a.flatten()
-    b = b.flatten()
-    c = np.zeros_like(a=a, dtype=np.float32)
-    cuda_mat_sum(a.astype(np.float32), b.astype(np.float32), c, m, n)
-    return c.reshape((m, n))
 
 """ Dense Layer
 
@@ -43,10 +23,10 @@ class Dense():
         self.g2_biases = np.zeros_like(self.biases)
         
     def forward(self, A):
-        Wx = compute_dot_prod(A, self.weights)
+        Wx = F.compute_matmul(A, self.weights)
         bias = self.biases
         bias = np.repeat(bias, Wx.shape[0], axis=0)
-        Z = compute_elem_wise_sum(Wx, bias)
+        Z = F.compute_matsum(Wx, bias)
         return Z
 
     def backward(self, A_prev, dZ, **kwargs):
@@ -57,11 +37,11 @@ class Dense():
 
         # compute d f / d x = d f / d dense * d dense / d x
         # where d dense/ d x = weights transposed
-        grad_input = compute_dot_prod(dZ, self.weights.T)
+        grad_input = F.compute_matmul(dZ, self.weights.T)
         m = A_prev.shape[0]
         
         # compute gradient w.r.t. weights and biases
-        grad_weights = compute_dot_prod(A_prev.T, dZ) / m
+        grad_weights = F.compute_matmul(A_prev.T, dZ) / m
         grad_biases = dZ.sum(axis=0) / m
         
         assert grad_weights.shape == self.weights.shape and grad_biases.shape == self.biases.shape

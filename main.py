@@ -1,10 +1,11 @@
 from __future__ import print_function
-import matplotlib.pyplot as plt
-import numpy as np
 import argparse
 
-from data import DataLoader
+import numpy as np
+import matplotlib.pyplot as plt
+
 from train import Trainer
+from data import iterate_minibatches, load_dataset
 
 np.random.seed(42)
 
@@ -23,7 +24,7 @@ def parse_args():
 def main():
     args = parse_args()
 
-    X_train, y_train, X_val, y_val, X_test, y_test = DataLoader.load_dataset(flatten=True)
+    X_train, y_train, X_val, y_val, X_test, y_test = load_dataset(flatten=True)
 
     input_dim = X_train.shape[1]
     num_classes = 10
@@ -35,7 +36,7 @@ def main():
     val_log = []
 
     for epoch in range(args.epochs):
-        for x_batch, y_batch in DataLoader.iterate_minibatches(X_train, y_train, batchsize=args.batch_size, shuffle=True):
+        for x_batch, y_batch in iterate_minibatches(X_train, y_train, batchsize=args.batch_size, shuffle=True):
             trainer.fit(x_batch, y_batch)
         
         train_log.append(np.mean(trainer.predict(X_train) == y_train))

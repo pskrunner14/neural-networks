@@ -76,7 +76,7 @@ __global__ void matMul(float *a, float *b, float *c, int m, int n, int k) {
 
 extern "C" {
 
-    void cuda_mat_sum(float *a, float *b, float *c, int m, int n) {
+    void cuda_matsum(float *a, float *b, float *c, int m, int n) {
         float *d_a, *d_b, *d_c;
 
         cudaMallocManaged(&d_a, (m * n) * sizeof(float));
@@ -102,7 +102,7 @@ extern "C" {
         cudaFree(d_c);
     }
 
-    void cuda_mat_prod(float *a, float *b, float *c, int m, int n) {
+    void cuda_matprod(float *a, float *b, float *c, int m, int n) {
         float *d_a, *d_b, *d_c;
 
         cudaMallocManaged(&d_a, (m * n) * sizeof(float));
@@ -128,7 +128,7 @@ extern "C" {
         cudaFree(d_c);
     }
  
-    void cuda_mat_mul(float *a, float *b, float *c, int m, int n, int k) {
+    void cuda_matmul(float *a, float *b, float *c, int m, int n, int k) {
         float *d_a, *d_b, *d_c;
 
         cudaMallocManaged(&d_a, (m * n) * sizeof(float));

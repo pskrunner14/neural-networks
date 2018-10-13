@@ -1,9 +1,10 @@
 from __future__ import print_function
 import os
-import numpy as np
 import dill
 
-from loss import Losses
+import numpy as np
+
+import loss
 from layers import Dense, ReLU
 
 np.random.seed(42)
@@ -70,8 +71,8 @@ class Trainer():
         logits = layer_activations[-1]
 
         # Compute the loss and the initial gradient
-        loss = Losses.softmax_crossentropy_with_logits(logits, y)
-        loss_grad = Losses.grad_softmax_crossentropy_with_logits(logits, y)
+        loss = loss.softmax_crossentropy_with_logits(logits, y)
+        loss_grad = loss.grad_softmax_crossentropy_with_logits(logits, y)
 
         # Backpropagate the gradients to all layers
         for l in range(len(self._network))[::-1]:
