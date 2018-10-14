@@ -42,9 +42,16 @@ class Trainer():
         """
         activations = []
         A = X
+        it = 0
         for layer in self._network:
+            if np.isnan(np.sum(A)):
+                print('nan')
+                print(it)
+                print(layer)
+                exit(0)
             activations.append(layer.forward(A))
             A = activations[-1]
+            it += 1
         assert len(activations) == len(self._network)
         return activations
 

@@ -52,8 +52,9 @@ __global__ void matsum(float *a, float *b, float *c, int m, int n) {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (row < m && col < n)
+    if (row < m && col < n) {
         c[row * n + col] = a[row * n + col] + b[row * n + col];
+    }
 }
 
 /**
@@ -70,8 +71,9 @@ __global__ void matprod(float *a, float *b, float *c, int m, int n) {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (row < m && col < n)
+    if (row < m && col < n) {
         c[row * n + col] = a[row * n + col] * b[row * n + col];
+    }
 }
 
 /**
@@ -88,8 +90,9 @@ __global__ void elemwise_sum(float *a, float b, float *c, int m, int n) {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (row < m && col < n)
+    if (row < m && col < n) {
         c[row * n + col] = a[row * n + col] + b;
+    }
 }
 
 /**
@@ -106,8 +109,9 @@ __global__ void elemwise_prod(float *a, float b, float *c, int m, int n) {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (row < m && col < n)
+    if (row < m && col < n) {
         c[row * n + col] = a[row * n + col] * b;
+    }
 }
 
 /**
@@ -124,8 +128,9 @@ __global__ void elemwise_max(float *a, float b, float *c, int m, int n) {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (row < m && col < n)
+    if (row < m && col < n) {
         c[row * n + col] = (a[row * n + col] > b) ? a[row * n + col] : b;
+    }
 }
 
 extern "C" {
@@ -174,8 +179,11 @@ extern "C" {
 
         matsum<<<dimGrid, dimBlock>>>(d_a, d_b, d_c, m, n);
         cudaDeviceSynchronize();
+        printMatrix(d_c, m, n);
 
         cudaMemcpy(c, d_c, (m * n) * sizeof(float), cudaMemcpyDeviceToHost);
+
+        printMatrix(c, m, n);
 
         cudaFree(d_a);
         cudaFree(d_b);

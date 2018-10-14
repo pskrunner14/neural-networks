@@ -33,11 +33,15 @@ def matmul(a, b, method='cpu'):
     if method == 'cpu':
         return cpu_matmul(a, b)
     elif method == 'cuda_c':
+        a = a.astype('float32')
+        b = b.astype('float32')
         m, n, k = a.shape[0], a.shape[1], b.shape[1]
         a = a.flatten()
         b = b.flatten()
         c = np.zeros(shape=(m * k), dtype=np.float32)
         cuda_matmul(a, b, c, m, n, k)
+        assert not np.isnan(np.sum(c)), 'mat mul is buggy'
+        c = c.astype('float64')
         return c.reshape((m, k))
     elif method == 'numba':
         c = np.zeros(shape=(a.shape[0], b.shape[1]), dtype=np.float32)
@@ -50,6 +54,8 @@ def matsum(a, b, method='cpu'):
     if method == 'cpu':
         return cpu_matsum(a, b)
     elif method == 'cuda_c':
+        a = a.astype('float32')
+        b = b.astype('float32')
         if len(a.shape) > 1:
             m, n = a.shape[0], a.shape[1]
         else:
@@ -60,6 +66,8 @@ def matsum(a, b, method='cpu'):
         b = b.flatten()
         c = np.zeros_like(a, dtype=np.float32)
         cuda_matsum(a, b, c, m, n)
+        assert not np.isnan(np.sum(c)), 'mat sum is buggy'
+        c = c.astype('float64')
         return c.reshape((m, )) if n == 1 else c.reshape((m, n))
     elif method == 'numba':
         return numba_matsum(a, b)
@@ -70,6 +78,8 @@ def matprod(a, b, method='cpu'):
     if method == 'cpu':
         return cpu_matprod(a, b)
     elif method == 'cuda_c':
+        a = a.astype('float32')
+        b = b.astype('float32')
         if len(a.shape) > 1:
             m, n = a.shape[0], a.shape[1]
         else:
@@ -78,6 +88,8 @@ def matprod(a, b, method='cpu'):
         b = b.flatten()
         c = np.zeros_like(a, dtype=np.float32)
         cuda_matprod(a, b, c, m, n)
+        assert not np.isnan(np.sum(c)), 'mat prod is buggy'
+        c = c.astype('float64')
         return c.reshape((m, )) if n == 1 else c.reshape((m, n))
     elif method == 'numba':
         return numba_matprod(a, b)
@@ -88,6 +100,7 @@ def elemwise_sum(a, value, method='cpu'):
     if method == 'cpu':
         return cpu_elemwise_sum(a, value)
     elif method == 'cuda_c':
+        a = a.astype('float32')
         if len(a.shape) > 1:
             m, n = a.shape[0], a.shape[1]
         else:
@@ -95,6 +108,8 @@ def elemwise_sum(a, value, method='cpu'):
         a = a.flatten()
         c = np.zeros_like(a, dtype=np.float32)
         cuda_elemwise_sum(a, value, c, m, n)
+        assert not np.isnan(np.sum(c)), 'element-wise sum is buggy'
+        c = c.astype('float64')
         return c.reshape((m, )) if n == 1 else c.reshape((m, n))
     elif method == 'numba':
         return numba_elemwise_sum(a, value)
@@ -105,6 +120,7 @@ def elemwise_prod(a, value, method='cpu'):
     if method == 'cpu':
         return cpu_elemwise_prod(a, value)
     elif method == 'cuda_c':
+        a = a.astype('float32')
         if len(a.shape) > 1:
             m, n = a.shape[0], a.shape[1]
         else:
@@ -112,6 +128,8 @@ def elemwise_prod(a, value, method='cpu'):
         a = a.flatten()
         c = np.zeros_like(a, dtype=np.float32)
         cuda_elemwise_prod(a, value, c, m, n)
+        assert not np.isnan(np.sum(c)), 'element-wise prod is buggy'
+        c = c.astype('float64')
         return c.reshape((m, )) if n == 1 else c.reshape((m, n))
     elif method == 'numba':
         return numba_elemwise_prod(a, value)
@@ -122,6 +140,7 @@ def elemwise_max(a, value, method='cpu'):
     if method == 'cpu':
         return cpu_elemwise_max(a, value)
     elif method == 'cuda_c':
+        a = a.astype('float32')
         if len(a.shape) > 1:
             m, n = a.shape[0], a.shape[1]
         else:
@@ -129,6 +148,8 @@ def elemwise_max(a, value, method='cpu'):
         a = a.flatten()
         c = np.zeros_like(a, dtype=np.float32)
         cuda_elemwise_max(a, value, c, m, n)
+        assert not np.isnan(np.sum(c)), 'element-wise max is buggy'
+        c = c.astype('float64')
         return c.reshape((m, )) if n == 1 else c.reshape((m, n))
     elif method == 'numba':
         return numba_elemwise_max(a, value)
