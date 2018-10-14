@@ -29,21 +29,19 @@ def main():
     num_classes = 10
     dims = [input_dim, 100, 200, 200, num_classes]
 
-    trainer = Trainer(dims=dims, lr=args.lr)
+    trainer = Trainer(dims=dims)
 
     train_log = []
     val_log = []
 
-    for epoch in range(args.epochs):
+    for epoch in range(1, args.epochs + 1):
         for x_batch, y_batch in DataLoader.iterate_minibatches(X_train, y_train, batchsize=args.batch_size, shuffle=True):
-            trainer.fit(x_batch, y_batch)
+            trainer.fit(x_batch, y_batch, lr=args.lr)
         
         train_log.append(np.mean(trainer.predict(X_train) == y_train))
         val_log.append(np.mean(trainer.predict(X_val) == y_val))
         
-        print("Epoch ", epoch + 1)
-        print("Train accuracy: {:.2f}%".format(train_log[-1] * 100))
-        print("Val accuracy: {:.2f}%".format(val_log[-1] * 100))
+        print("Epoch[{}/{}]  train acc: {:.4f}   -   val acc: {:.4f}".format(epoch, args.epochs, train_log[-1], val_log[-1]))
         if args.plot:
             plt.plot(train_log,label='train accuracy')
             plt.plot(val_log,label='val accuracy')
@@ -53,9 +51,7 @@ def main():
 
     print('\nTesting on {} samples'.format(len(X_test)))
     accuracy = np.mean(trainer.predict(X_test) == y_test) * 100
-    print('Test accuracy: {:.2f}%\n'.format(accuracy))
-
-    trainer.save_model()
+    print('test acc: {:.4f}'.format(accuracy))
 
 if __name__ == '__main__':
     try:

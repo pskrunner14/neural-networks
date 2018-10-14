@@ -1,26 +1,24 @@
 from __future__ import print_function
 import os
-import numpy as np
 import dill
 
-from loss import Losses
+import numpy as np
+from autograd import elementwise_grad as grad
+
+from loss import (
+    softmax_crossentropy_with_logits,
+    grad_softmax_crossentropy_with_logits
+)
 from layers import Dense, ReLU
 
 np.random.seed(42)
 
 class Trainer():
 
-    def __init__(self, dims=None, name='model', pretrained=False, lr=0.001):
-        self._name = name
-        if pretrained:
-            self._load_model()
-        elif dims is None:
+    def __init__(self, dims=None):
+        if dims is None:
             raise UserWarning('Model dims should not be none')
-        else:
-            self._create(dims)
-        self._lr = lr
-        self._alpha = 0.99
-        self._epsilon = 1e-8
+        self._create(dims)
 
     def _create(self, dims):
         model = []
@@ -56,7 +54,7 @@ class Trainer():
         logits = self._forward(X)[-1]
         return logits.argmax(axis=-1)
 
-    def fit(self, X, y):
+    def fit(self, X, y, **kwargs):
         """ Train your network on a given batch of X and y.
         You first need to run forward to get all layer activations.
         Then you can run layer.backward going from last to first layer.
@@ -71,23 +69,11 @@ class Trainer():
         logits = layer_activations[-1]
 
         # Compute the loss and the initial gradient
-        loss = Losses.softmax_crossentropy_with_logits(logits, y)
-        loss_grad = Losses.grad_softmax_crossentropy_with_logits(logits, y)
+        loss = softmax_crossentropy_with_logits(logits, y)
+        grad_loss = grad_softmax_crossentropy_with_logits(logits, y)
 
         # Backpropagate the gradients to all layers
         for l in range(len(self._network))[::-1]:
-            loss_grad = self._network[l].backward(layer_inputs[l], loss_grad, 
-                            lr=self._lr, alpha=self._alpha, epsilon=self._epsilon)
+            grad_loss = self._network[l].backward(layer_inputs[l], grad_loss, **kwargs)
 
         return np.mean(loss)
-
-    def save_model(self):
-        if not os.path.isdir('models'):
-            os.mkdir('models')
-        with open('models/{}.dill'.format(self._name), 'wb') as dill_file:
-            dill.dump(self._network, dill_file)
-        print('Model saved to `models/{}.dill`'.format(self._name))
-
-    def _load_model(self):
-        with open('models/{}.dill'.format(self._name), 'rb') as dill_file:
-            self._network = dill.load(dill_file)
