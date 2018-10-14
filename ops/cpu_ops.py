@@ -1,14 +1,19 @@
-import autograd.numpy as np
-from autograd import elementwise_grad
+import numpy as np
 
 def cpu_matmul(a, b):
-    pass
+    return np.dot(a, b)
 
 def cpu_matsum(a, b):
-    pass
+    return np.add(a, b)
+
+def cpu_matprod(a, b):
+    return np.multiply(a, b)
+
+def cpu_elemwise_sum(a, value):
+    return cpu_matsum(a, value)
 
 def cpu_elemwise_prod(a, value):
-    pass
+    return cpu_matprod(a, value)
 
 def cpu_elemwise_max(a, value):
-    pass
+    return np.maximum(a, value)

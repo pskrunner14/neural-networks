@@ -17,6 +17,16 @@ def get_cuda_matsum(dll):
     func.argtypes = [POINTER(c_float), POINTER(c_float), POINTER(c_float), c_int, c_int]
     return func
 
+def get_cuda_matprod(dll):
+    func = dll.cuda_matprod
+    func.argtypes = [POINTER(c_float), POINTER(c_float), POINTER(c_float), c_int, c_int]
+    return func
+
+def get_cuda_elemwise_sum(dll):
+    func = dll.cuda_elemwise_sum
+    func.argtypes = [POINTER(c_float), c_float, POINTER(c_float), c_int, c_int]
+    return func
+
 def get_cuda_elemwise_prod(dll):
     func = dll.cuda_elemwise_prod
     func.argtypes = [POINTER(c_float), c_float, POINTER(c_float), c_int, c_int]
@@ -29,6 +39,8 @@ def get_cuda_elemwise_max(dll):
 
 __cuda_matmul = get_cuda_matmul(dll)
 __cuda_matsum = get_cuda_matsum(dll)
+__cuda_matprod = get_cuda_matprod(dll)
+__cuda_elemwise_sum = get_cuda_elemwise_sum(dll)
 __cuda_elemwise_prod = get_cuda_elemwise_prod(dll)
 __cuda_elemwise_max = get_cuda_elemwise_max(dll)
 
@@ -44,6 +56,18 @@ def cuda_matsum(a, b, c, m, n):
     b_p = b.ctypes.data_as(POINTER(c_float))
     c_p = c.ctypes.data_as(POINTER(c_float))
     __cuda_matsum(a_p, b_p, c_p, m, n)
+
+def cuda_matprod(a, b, c, m, n):
+    a_p = a.ctypes.data_as(POINTER(c_float))
+    b_p = b.ctypes.data_as(POINTER(c_float))
+    c_p = c.ctypes.data_as(POINTER(c_float))
+    __cuda_matprod(a_p, b_p, c_p, m, n)
+
+def cuda_elemwise_sum(a, b, c, m, n):
+    a_p = a.ctypes.data_as(POINTER(c_float))
+    b_f = ctypes.c_float(b)
+    c_p = c.ctypes.data_as(POINTER(c_float))
+    __cuda_elemwise_sum(a_p, b_f, c_p, m, n)
 
 def cuda_elemwise_prod(a, b, c, m, n):
     a_p = a.ctypes.data_as(POINTER(c_float))
@@ -70,6 +94,10 @@ def main():
     assert np.all(c==144.0), "Matrix dot-product operation is buggy"
     cuda_matsum(a, b, c, size, size)
     assert np.all(c==6.0), "Matrix sum operation is buggy"
+    cuda_matprod(a, b, c, size, size)
+    assert np.all(c==9.0), "Matrix product operation is buggy"
+    cuda_elemwise_sum(a, 5.0, c, size, size)
+    assert np.all(c==8.0), "Element-wise sum operation is buggy"
     cuda_elemwise_prod(a, 2.5, c, size, size)
     assert np.all(c==7.5), "Element-wise product operation is buggy"
     cuda_elemwise_max(a, 4.0, c, size, size)

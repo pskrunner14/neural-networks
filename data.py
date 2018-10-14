@@ -9,8 +9,8 @@ def load_dataset(flatten=False):
     (X_train, y_train), (X_test, y_test) = keras.datasets.mnist.load_data()
     
     # normalize x
-    X_train = X_train.astype(float) / 255.
-    X_test = X_test.astype(float) / 255.
+    X_train = X_train.astype(np.float32) / 255.
+    X_test = X_test.astype(np.float32) / 255.
 
     # we reserve the last 10000 training examples for validation
     X_train, X_val = X_train[:-10000], X_train[-10000:]

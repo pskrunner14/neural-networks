@@ -45,7 +45,6 @@ class Trainer():
         for layer in self._network:
             activations.append(layer.forward(A))
             A = activations[-1]
-            
         assert len(activations) == len(self._network)
         return activations
 
@@ -71,15 +70,15 @@ class Trainer():
         logits = layer_activations[-1]
 
         # Compute the loss and the initial gradient
-        loss = loss.softmax_crossentropy_with_logits(logits, y)
-        loss_grad = loss.grad_softmax_crossentropy_with_logits(logits, y)
+        objective = loss.softmax_crossentropy_with_logits(logits, y)
+        grad_objective = loss.grad_softmax_crossentropy_with_logits(logits, y)
 
         # Backpropagate the gradients to all layers
         for l in range(len(self._network))[::-1]:
-            loss_grad = self._network[l].backward(layer_inputs[l], loss_grad, 
+            grad_objective = self._network[l].backward(layer_inputs[l], grad_objective, 
                             lr=self._lr, alpha=self._alpha, epsilon=self._epsilon)
 
-        return np.mean(loss)
+        return np.mean(objective)
 
     def save_model(self):
         if not os.path.isdir('models'):
