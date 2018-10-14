@@ -15,7 +15,7 @@ class TestLayers(unittest.TestCase):
         grads = layer.backward(x, np.ones([10, 32]) / (32 * 10))
         numeric_grads = eval_numerical_gradient(lambda x: layer.forward(x).mean(), x=x)
         
-        self.assertTrue(np.allclose(grads, numeric_grads, rtol=1e-3, atol=0), 
+        self.assertTrue(np.allclose(grads, numeric_grads, rtol=1e-5, atol=0), 
             msg="gradient returned by your layer does not match the numerically computed gradient")
 
     def test_dense_layer_PARAMS(self):
@@ -42,7 +42,7 @@ class TestLayers(unittest.TestCase):
         l = Dense(32, 64)
         numeric_grads = eval_numerical_gradient(lambda x: l.forward(x).sum(), x)
         grads = l.backward(x, np.ones([10, 64]), optim='gd', lr=0, alpha=0.9, epsilon=1e-8)
-        self.assertTrue(np.allclose(grads, numeric_grads, rtol=1e-3, atol=0), 
+        self.assertTrue(np.allclose(grads, numeric_grads, rtol=1e-5, atol=0), 
             msg="input gradient does not match numeric grad")
 
     def test_dense_layer_GRADIENT_WRT_PARAMS(self):
@@ -65,7 +65,7 @@ class TestLayers(unittest.TestCase):
         numeric_db = eval_numerical_gradient(lambda b: compute_out_given_wb(w, b).mean(0).sum(), b)
         grad_w, grad_b = compute_grad_by_params(w, b)
 
-        self.assertTrue(np.allclose(numeric_dw, grad_w, rtol=1e-3, atol=0),
+        self.assertTrue(np.allclose(numeric_dw, grad_w, rtol=1e-5, atol=0),
             msg="weight gradient does not match numeric weight gradient")
-        self.assertTrue(np.allclose(numeric_db, grad_b, rtol=1e-3, atol=0), 
+        self.assertTrue(np.allclose(numeric_db, grad_b, rtol=1e-5, atol=0), 
             msg="bias gradient does not match numeric bias gradient")

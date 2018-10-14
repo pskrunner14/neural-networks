@@ -19,5 +19,5 @@ class TestLoss(unittest.TestCase):
         softmax_crossentropy_with_logits(logits, answers)
         grads = grad_softmax_crossentropy_with_logits(logits, answers)
         numeric_grads = eval_numerical_gradient(lambda l: softmax_crossentropy_with_logits(l, answers).mean(), logits)
-        self.assertTrue(np.allclose(numeric_grads, grads, rtol=1, atol=1e-8), 
+        self.assertTrue(np.allclose(numeric_grads, grads, rtol=1e-5, atol=0), 
             msg="The reference implementation has just failed. Someone has just changed the rules of math.")

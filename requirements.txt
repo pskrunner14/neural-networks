@@ -1,4 +1,5 @@
-numpy==1.15.1
+autograd==1.2
+numpy==1.15.2
 keras==2.2.2
 matplotlib==2.2.3
 tqdm==4.25.0
