@@ -22,7 +22,7 @@ class TestLayers(unittest.TestCase):
         layer = Dense(128, 150)
         self.assertTrue(-0.05 < layer.weights.mean() < 0.05, 
             msg="The initial weights must have zero mean and small variance.")
-        self.assertTrue(1e-3 < layer.weights.std() < 1e-1, 
+        self.assertTrue(0 < layer.weights.std() < 1, 
             msg="If you know what you're doing, remove this assertion.")
         self.assertTrue(-0.05 < layer.biases.mean() < 0.05, 
             msg="Biases must be zero mean. Ignore if you have a reason to do otherwise.")
@@ -41,7 +41,7 @@ class TestLayers(unittest.TestCase):
         x = np.linspace(-1, 1 , 10 * 32).reshape([10, 32])
         l = Dense(32, 64)
         numeric_grads = eval_numerical_gradient(lambda x: l.forward(x).sum(), x)
-        grads = l.backward(x, np.ones([10, 64]), lr=0, alpha=0.9, epsilon=1e-8)
+        grads = l.backward(x, np.ones([10, 64]), optim='gd', lr=0, alpha=0.9, epsilon=1e-8)
         self.assertTrue(np.allclose(grads, numeric_grads, rtol=1e-3, atol=0), 
             msg="input gradient does not match numeric grad")
 
@@ -57,7 +57,7 @@ class TestLayers(unittest.TestCase):
             layer.weights = np.array(w)
             layer.biases = np.array(b)
             x = np.linspace(-1, 1, 10 * 32).reshape([10, 32])
-            layer.backward(x, np.ones([10, 64]), optim='gd', lr=1, alpha=0.9, epsilon=1e-8)
+            layer.backward(x, np.ones([10, 64]), optim='gd', lr=1, gamma=0.9, epsilon=1e-8)
             return w - layer.weights, b - layer.biases
         w = np.random.randn(32, 64) * np.sqrt(2. / (32 + 64))
         b = np.zeros(64)

@@ -41,8 +41,8 @@ class Dense(Layer):
     """
     
     def __init__(self, input_units, output_units):
-        # initialize weights with small random numbers. We use xavier initialization
-        self.weights = np.random.randn(input_units, output_units) * np.sqrt(2. / (input_units + output_units))
+        # initialize weights with glorot/xavier uniform initialization
+        self.weights = np.random.randn(input_units, output_units) * np.sqrt(6. / (input_units + output_units))
         self.biases = np.zeros(output_units)
         self.g2_weights = np.zeros_like(self.weights)
         self.g2_biases = np.zeros_like(self.biases)
@@ -59,7 +59,7 @@ class Dense(Layer):
     
     def backward(self, inputs, gradients, **kwargs):
         lr = kwargs.get('lr', 0.001)
-        alpha = kwargs.get('alpha', 0.99)
+        gamma = kwargs.get('gamma', 0.9)
         epsilon = kwargs.get('epsilon', 1e-8)
         optim = kwargs.get('optim', 'rmsprop')
 
@@ -80,11 +80,11 @@ class Dense(Layer):
         update_biases = lr * grad_biases
 
         if optim == 'rmsprop':
-            self.g2_weights = (alpha * self.g2_weights) + (1 - alpha) * np.square(grad_weights)
-            self.g2_biases = (alpha * self.g2_biases) + (1 - alpha) * np.square(grad_biases)
+            self.g2_weights = (self.g2_weights * gamma) + np.square(grad_weights) * (1 - gamma)
+            self.g2_biases = (self.g2_biases * gamma) + np.square(grad_biases) * (1 - gamma)
             
-            self.weights -= update_weights / np.sqrt(self.g2_weights + epsilon)
-            self.biases -= update_biases / np.sqrt(self.g2_biases + epsilon)
+            self.weights -= update_weights / (np.sqrt(self.g2_weights) + epsilon)
+            self.biases -= update_biases / (np.sqrt(self.g2_biases) + epsilon)
         elif optim == 'gd':
             self.weights -= update_weights
             self.biases -= update_biases
