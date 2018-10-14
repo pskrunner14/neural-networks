@@ -41,9 +41,13 @@ class Dense(Layer):
     """
     
     def __init__(self, input_units, output_units):
+        self.type = 'dense'
+
         # initialize weights with glorot/xavier uniform initialization
         self.weights = np.random.randn(input_units, output_units) * np.sqrt(6. / (input_units + output_units))
         self.biases = np.zeros(output_units)
+
+    def _init_g2(self):
         self.g2_weights = np.zeros_like(self.weights)
         self.g2_biases = np.zeros_like(self.biases)
         
@@ -60,7 +64,7 @@ class Dense(Layer):
     def backward(self, inputs, gradients, **kwargs):
         lr = kwargs.get('lr', 0.001)
         gamma = kwargs.get('gamma', 0.9)
-        epsilon = kwargs.get('epsilon', 1e-8)
+        epsilon = kwargs.get('epsilon', 1e-7)
         optim = kwargs.get('optim', 'rmsprop')
 
         # dL / dx = dL / dZ * dZ / dx = gradients * W
@@ -80,6 +84,8 @@ class Dense(Layer):
         update_biases = lr * grad_biases
 
         if optim == 'rmsprop':
+            if not hasattr(self, 'g2_weights'):
+                self._init_g2()
             self.g2_weights = (self.g2_weights * gamma) + np.square(grad_weights) * (1 - gamma)
             self.g2_biases = (self.g2_biases * gamma) + np.square(grad_biases) * (1 - gamma)
             
@@ -94,8 +100,11 @@ class Dense(Layer):
         return grad_input
     
 class ReLU(Layer):
+    """ReLU layer. 
+    Simply applies elementwise rectified linear unit to all inputs.
+    """
+
     def __init__(self):
-        """ReLU layer simply applies elementwise rectified linear unit to all inputs"""
         self.type = 'relu'
     
     def forward(self, inputs):
