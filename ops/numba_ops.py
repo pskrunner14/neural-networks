@@ -1,5 +1,5 @@
 import numpy as np
-from numba import vectorize, int64, float32, void, jit, cuda, guvectorize
+from numba import cuda
 
 """
 Numba CUDA config paths:
@@ -8,26 +8,53 @@ Numba CUDA config paths:
 /usr/local/cuda-9.2/lib64/
 """
 
-# @jit(void(float32[:,:],float32[:,:],float32[:,:]))
-def numba_matmul(a, b, c):
-    pass
+@cuda.jit
+def numba_matmul(a, b, c, m, n, k):
+    row = cuda.blockIdx.y * cuda.blockDim.y + cuda.threadIdx.y
+    col = cuda.blockIdx.x * cuda.blockDim.x + cuda.threadIdx.x
 
-# @jit(void(float32[:,:],float32[:,:],float32[:,:]))
-def numba_matsum(a, b):
-    pass
+    if row < m and col < k:
+        summ = 0
+        for i in range(n):
+            summ += a[row, i] * b[i, col]
+        c[row, col] = summ
+        
+@cuda.jit
+def numba_matsum(a, b, c, m, n):
+    row = cuda.blockIdx.y * cuda.blockDim.y + cuda.threadIdx.y
+    col = cuda.blockIdx.x * cuda.blockDim.x + cuda.threadIdx.x
 
-# @jit(void(float32[:,:],float32[:,:],float32[:,:]))
-def numba_matprod(a, b):
-    pass
+    if row < m and col < n:
+        c[row, col] = a[row, col] + b[row, col]
 
-# @jit(void(float32[:,:],float32[:,:],float32[:,:]))
-def numba_elemwise_sum(a, value):
-    pass
+@cuda.jit
+def numba_matprod(a, b, c, m, n):
+    row = cuda.blockIdx.y * cuda.blockDim.y + cuda.threadIdx.y
+    col = cuda.blockIdx.x * cuda.blockDim.x + cuda.threadIdx.x
 
-# @jit(void(float32[:,:],float32[:,:],float32[:,:]))
-def numba_elemwise_prod(a, value):
-    pass
+    if row < m and col < n:
+        c[row, col] = a[row, col] * b[row, col]
 
-# @jit(void(float32[:,:],float32[:,:],float32[:,:]))
-def numba_elemwise_max(a, value):
-    pass
+@cuda.jit
+def numba_elemwise_sum(a, value, c, m, n):
+    row = cuda.blockIdx.y * cuda.blockDim.y + cuda.threadIdx.y
+    col = cuda.blockIdx.x * cuda.blockDim.x + cuda.threadIdx.x
+
+    if row < m and col < n:
+        c[row, col] = a[row, col] + value
+
+@cuda.jit
+def numba_elemwise_prod(a, value, c, m, n):
+    row = cuda.blockIdx.y * cuda.blockDim.y + cuda.threadIdx.y
+    col = cuda.blockIdx.x * cuda.blockDim.x + cuda.threadIdx.x
+
+    if row < m and col < n:
+        c[row, col] = a[row, col] * value
+
+@cuda.jit
+def numba_elemwise_max(a, value, c, m, n):
+    row = cuda.blockIdx.y * cuda.blockDim.y + cuda.threadIdx.y
+    col = cuda.blockIdx.x * cuda.blockDim.x + cuda.threadIdx.x
+
+    if row < m and col < n:
+        c[row, col] = a[row, col] if a[row, col] > value else value

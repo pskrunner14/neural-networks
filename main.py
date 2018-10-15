@@ -11,14 +11,14 @@ np.random.seed(42)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Training Configuration')
-    parser.add_argument('--epochs', type=int, default=10, dest='epochs',
+    parser.add_argument('--epochs', type=int, default=20, dest='epochs',
                         help='Number of iterations for training')
-    parser.add_argument('--batch-size', type=int, default=1024, dest='batch_size', 
+    parser.add_argument('--batch-size', type=int, default=128, dest='batch_size', 
                         help='Batch size for one epoch in training')
     parser.add_argument('--lr', type=float, default=0.005, dest='lr',
                         help='Initial learning rate')
-    parser.add_argument('--plot', type=bool, default=False, dest='plot',
-                        help='Flag that indicates whether plot the accuracy during training')
+    parser.add_argument('--backend', type=str, default='cpu', dest='backend',
+                        help='Type of computation backend to use [CPU/GPU]')
     return parser.parse_args()
 
 def main():
@@ -28,35 +28,25 @@ def main():
 
     input_dim = X_train.shape[1]
     num_classes = 10
-    dims = [input_dim, 10, 20, 20, num_classes]
+    dims = [input_dim, 1024, 1024, 256, num_classes]
 
-    trainer = Trainer(dims=dims, lr=args.lr)
+    trainer = Trainer(dims=dims, backend=args.backend.lower())
 
     train_log = []
     val_log = []
 
     for epoch in range(args.epochs):
         for x_batch, y_batch in iterate_minibatches(X_train, y_train, batchsize=args.batch_size, shuffle=True):
-            trainer.fit(x_batch, y_batch)
+            trainer.fit(x_batch, y_batch, lr=args.lr)
         
         train_log.append(np.mean(trainer.predict(X_train) == y_train))
         val_log.append(np.mean(trainer.predict(X_val) == y_val))
         
-        print("Epoch ", epoch + 1)
-        print("Train accuracy: {:.2f}%".format(train_log[-1] * 100))
-        print("Val accuracy: {:.2f}%".format(val_log[-1] * 100))
-        if args.plot:
-            plt.plot(train_log,label='train accuracy')
-            plt.plot(val_log,label='val accuracy')
-            plt.legend(loc='best')
-            plt.grid()
-            plt.show()
+        print("Epoch[{}/{}]  train acc: {:.4f}   -   val acc: {:.4f}".format(epoch, args.epochs, train_log[-1], val_log[-1]))
 
     print('\nTesting on {} samples'.format(len(X_test)))
-    accuracy = np.mean(trainer.predict(X_test) == y_test) * 100
-    print('Test accuracy: {:.2f}%\n'.format(accuracy))
-
-    trainer.save_model()
+    accuracy = np.mean(trainer.predict(X_test) == y_test)
+    print('test acc: {:.4f}'.format(accuracy))
 
 if __name__ == '__main__':
     try:
