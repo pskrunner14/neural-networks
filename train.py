@@ -3,7 +3,6 @@ import os
 import dill
 
 import numpy as np
-from autograd import elementwise_grad as grad
 
 from loss import (
     softmax_crossentropy_with_logits,
@@ -15,21 +14,24 @@ np.random.seed(42)
 
 class Trainer():
 
-    def __init__(self, dims=None):
+    def __init__(self, dims=None, backend='cpu'):
         if dims is None:
-            raise UserWarning('Model dims should not be none')
-        self._create(dims)
+            raise UserWarning('Model dims should not be none.')
+        if backend.lower() in ['cpu', 'gpu']:
+            self._create(dims, backend.lower())
+        else:
+            raise UserWarning('Unknown computation backend. Should be one of [CPU, GPU]')
 
-    def _create(self, dims):
+    def _create(self, dims, backend):
         model = []
         input_shape = dims[0]
         num_classes = dims[-1]
-        model.append(Dense(input_shape, dims[1]))
-        model.append(ReLU())
+        model.append(Dense(input_shape, dims[1], method=backend))
+        model.append(ReLU(method=backend))
         for i in range(2, len(dims) - 1):
-            model.append(Dense(dims[i - 1], dims[i]))
-            model.append(ReLU())
-        model.append(Dense(dims[-2], num_classes))
+            model.append(Dense(dims[i - 1], dims[i], method=backend))
+            model.append(ReLU(method=backend))
+        model.append(Dense(dims[-2], num_classes, method=backend))
         self._network = model
 
     def _forward(self, X):
@@ -39,11 +41,9 @@ class Trainer():
         """
         activations = []
         A = X
-        
         for layer in self._network:
             activations.append(layer.forward(A))
             A = activations[-1]
-            
         assert len(activations) == len(self._network)
         return activations
 
@@ -58,7 +58,6 @@ class Trainer():
         """ Train your network on a given batch of X and y.
         You first need to run forward to get all layer activations.
         Then you can run layer.backward going from last to first layer.
-
         After you called backward for all layers, all Dense layers 
         have already made one gradient step.
         """
