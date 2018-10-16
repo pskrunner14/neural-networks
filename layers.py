@@ -36,18 +36,12 @@ class Layer:
         """
         pass
 
-""" Dense Layer
-
-Performs a learned affine transformation:
-    f(x) = <W*x> + b
-
-    input shape: [batch, input_units]
-    output shape: [batch, output units]
-"""
 class Dense():
     """ Dense layer.
     A dense layer is a layer which performs a learned affine transformation:
         f(x) = <W*x> + b
+    input shape: [batch, input_units]
+    output shape: [batch, output units]
     """
 
     def __init__(self, input_units, output_units, method='cpu'):
@@ -94,8 +88,8 @@ class Dense():
                 self._init_g2()
             self.g2_weights = F.matsum(F.prod(self.g2_weights, gamma, method=self.method), F.prod(np.square(grad_weights), (1 - gamma), method=self.method), method=self.method)
             self.g2_biases = F.matsum(F.prod(self.g2_biases, gamma, method=self.method), F.prod(np.square(grad_biases), (1 - gamma), method=self.method), method=self.method)
-            self.weights = F.matsum(self.weights, -F.matprod(update_weights, 1. / np.sqrt(F.sum(self.g2_weights, epsilon, method=self.method)), method=self.method), method=self.method)
-            self.biases = F.matsum(self.biases, -F.matprod(update_biases, 1. / np.sqrt(F.sum(self.g2_biases, epsilon, method=self.method)), method=self.method), method=self.method)
+            self.weights = F.matsum(self.weights, -F.matprod(update_weights, 1. / np.sqrt(F.add(self.g2_weights, epsilon, method=self.method)), method=self.method), method=self.method)
+            self.biases = F.matsum(self.biases, -F.matprod(update_biases, 1. / np.sqrt(F.add(self.g2_biases, epsilon, method=self.method)), method=self.method), method=self.method)
         elif optim == 'gd':
             self.weights = F.matsum(self.weights, -update_weights, method=self.method)
             self.biases = F.matsum(self.biases, -update_biases, method=self.method)

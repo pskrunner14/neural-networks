@@ -60,7 +60,7 @@ def matprod(a, b, method='cpu'):
         numba_matprod[gridDim, gridBlock](a, b, c, m, n)
         return c.reshape((m, n))
 
-def sum(a, value, method='cpu'):
+def add(a, value, method='cpu'):
     if method == 'cpu' or len(a.shape) == 1:
         return cpu_sum(a, value)
     if method == 'gpu':

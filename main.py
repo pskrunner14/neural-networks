@@ -2,7 +2,6 @@ from __future__ import print_function
 import argparse
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 from train import Trainer
 from data import iterate_minibatches, load_dataset

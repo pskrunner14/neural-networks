@@ -3,7 +3,6 @@ import os
 import dill
 
 import numpy as np
-from autograd import elementwise_grad as grad
 
 from loss import (
     softmax_crossentropy_with_logits,
