@@ -1,3 +1,8 @@
+""" NUMPY CPU API: cpu_ops.py
+*   Purpose: NumPy API for performing computation on the CPU.
+*   @author Prabhsimran Singh
+*   @version 1.0 17/10/18
+"""
 import numpy as np
 
 def cpu_matmul(a, b):
@@ -9,11 +14,11 @@ def cpu_matsum(a, b):
 def cpu_matprod(a, b):
     return np.multiply(a, b)
 
-def cpu_elemwise_sum(a, value):
+def cpu_sum(a, value):
     return cpu_matsum(a, value)
 
-def cpu_elemwise_prod(a, value):
+def cpu_prod(a, value):
     return cpu_matprod(a, value)
 
-def cpu_elemwise_max(a, value):
+def cpu_maximum(a, value):
     return np.maximum(a, value)

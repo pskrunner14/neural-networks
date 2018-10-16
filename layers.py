@@ -55,7 +55,7 @@ class Dense():
         self.method = method
 
         # initialize weights with small random numbers. We use xavier initialization
-        self.weights = F.elemwise_prod(np.random.randn(input_units, output_units), np.sqrt(2. / (input_units + output_units)), method=self.method)
+        self.weights = F.prod(np.random.randn(input_units, output_units), np.sqrt(2. / (input_units + output_units)), method=self.method)
         self.biases = np.zeros(output_units)
 
     def _init_g2(self):
@@ -80,22 +80,22 @@ class Dense():
         
         # compute gradient w.r.t. weights and biases
         # dL / dW = dL / dZ * dZ / dW = gradients * inputs
-        grad_weights = F.elemwise_prod(F.matmul(inputs.T, gradients, method=self.method), 1. / m, method=self.method)
+        grad_weights = F.prod(F.matmul(inputs.T, gradients, method=self.method), 1. / m, method=self.method)
         # dL / db = dL / dZ * dZ / db = gradients * 1
-        grad_biases = F.elemwise_prod(gradients.sum(axis=0), 1. / m, method=self.method)
+        grad_biases = F.prod(gradients.sum(axis=0), 1. / m, method=self.method)
 
         assert grad_weights.shape == self.weights.shape and grad_biases.shape == self.biases.shape
         
-        update_weights = F.elemwise_prod(grad_weights, lr, method=self.method)
-        update_biases = F.elemwise_prod(grad_biases, lr, method=self.method)
+        update_weights = F.prod(grad_weights, lr, method=self.method)
+        update_biases = F.prod(grad_biases, lr, method=self.method)
 
         if optim == 'rmsprop':
             if not hasattr(self, 'g2_weights'):
                 self._init_g2()
-            self.g2_weights = F.matsum(F.elemwise_prod(self.g2_weights, gamma, method=self.method), F.elemwise_prod(np.square(grad_weights), (1 - gamma), method=self.method), method=self.method)
-            self.g2_biases = F.matsum(F.elemwise_prod(self.g2_biases, gamma, method=self.method), F.elemwise_prod(np.square(grad_biases), (1 - gamma), method=self.method), method=self.method)
-            self.weights = F.matsum(self.weights, -F.matprod(update_weights, 1. / np.sqrt(F.elemwise_sum(self.g2_weights, epsilon, method=self.method)), method=self.method), method=self.method)
-            self.biases = F.matsum(self.biases, -F.matprod(update_biases, 1. / np.sqrt(F.elemwise_sum(self.g2_biases, epsilon, method=self.method)), method=self.method), method=self.method)
+            self.g2_weights = F.matsum(F.prod(self.g2_weights, gamma, method=self.method), F.prod(np.square(grad_weights), (1 - gamma), method=self.method), method=self.method)
+            self.g2_biases = F.matsum(F.prod(self.g2_biases, gamma, method=self.method), F.prod(np.square(grad_biases), (1 - gamma), method=self.method), method=self.method)
+            self.weights = F.matsum(self.weights, -F.matprod(update_weights, 1. / np.sqrt(F.sum(self.g2_weights, epsilon, method=self.method)), method=self.method), method=self.method)
+            self.biases = F.matsum(self.biases, -F.matprod(update_biases, 1. / np.sqrt(F.sum(self.g2_biases, epsilon, method=self.method)), method=self.method), method=self.method)
         elif optim == 'gd':
             self.weights = F.matsum(self.weights, -update_weights, method=self.method)
             self.biases = F.matsum(self.biases, -update_biases, method=self.method)
@@ -119,8 +119,8 @@ class ReLU():
         self.method = method
     
     def forward(self, inputs):
-        return F.elemwise_max(inputs, 0.0, method=self.method)
+        return F.maximum(inputs, 0., method=self.method)
     
     def backward(self, inputs, gradients, **kwargs):
-        grad_relu = inputs > 0.0
+        grad_relu = inputs > 0.
         return F.matprod(gradients, grad_relu, method=self.method)

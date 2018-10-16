@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 from train import Trainer
 from data import iterate_minibatches, load_dataset
+from ops.cuda_c_ops import cuda_device_info
 
 np.random.seed(42)
 
@@ -23,6 +24,8 @@ def parse_args():
 
 def main():
     args = parse_args()
+    if args.backend.lower() == 'gpu':
+        cuda_device_info()
 
     X_train, y_train, X_val, y_val, X_test, y_test = load_dataset(flatten=True)
 

@@ -3,8 +3,9 @@ sys.path.append('../')
 
 import unittest
 import numpy as np
+from numpy.linalg import norm
 
-from loss (
+from loss import (
     softmax_crossentropy_with_logits,
     grad_softmax_crossentropy_with_logits
 )
@@ -18,6 +19,5 @@ class TestLoss(unittest.TestCase):
         softmax_crossentropy_with_logits(logits, answers)
         grads = grad_softmax_crossentropy_with_logits(logits, answers)
         numeric_grads = eval_numerical_gradient(lambda l: softmax_crossentropy_with_logits(l, answers).mean(), logits)
-        
-        self.assertTrue(np.allclose(numeric_grads, grads, rtol=1e-3, atol=0), 
+        self.assertTrue(np.allclose(numeric_grads, grads, rtol=1e-5, atol=0), 
             msg="The reference implementation has just failed. Someone has just changed the rules of math.")

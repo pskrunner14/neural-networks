@@ -17,8 +17,11 @@ class Trainer():
 
     def __init__(self, dims=None, backend='cpu'):
         if dims is None:
-            raise UserWarning('Model dims should not be none')
-        self._create(dims, backend.lower())
+            raise UserWarning('Model dims should not be none.')
+        if backend.lower() in ['cpu', 'gpu']:
+            self._create(dims, backend.lower())
+        else:
+            raise UserWarning('Unknown computation backend. Should be one of [CPU, GPU]')
 
     def _create(self, dims, backend):
         model = []

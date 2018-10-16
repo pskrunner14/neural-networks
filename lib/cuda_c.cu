@@ -2,13 +2,11 @@
  *  CUDA PARALLEL PROGRAMMING: cuda_c.cu
  *  Purpose: Matrix Operations using CUDA C/C++
  *  @author Prabhsimran Singh
- *  @version 2.2 15/10/18
+ *  @version 2.4 17/10/18
  *
  *  Build using: nvcc -Xcompiler -fPIC -shared -o lib/cuda_c.so lib/cuda_c.cu --gpu-architecture=compute_61 --gpu-code=sm_61,compute_61
  */
-
 #include <iostream>
-#include <math.h>
 #include "utils/devices.cu"
 #include "utils/utils.cpp"
 
@@ -29,12 +27,15 @@ __global__ void matmul(double *a, double *b, double *c, int m, int n, int k) {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
+    // strides are unnecessary if you're not using variable sized blocks
+    // however I'm going to leave it here since the focus of this is not 
+    // optimality or performance but readability and overall coherence.
     int stride_row = gridDim.y * blockDim.y;
     int stride_col = gridDim.x * blockDim.x;
     
     for (; row < m && col < k; row += stride_row, col += stride_col) {
         double sum = 0;
-        #pragma unroll
+        #pragma unroll // unrolls the for loop (optimization - cuts on exec time)
         for (int i = 0; i < n; i++) {
             sum += a[row * n + i] * b[i * k + col];
         }
@@ -87,16 +88,16 @@ __global__ void matprod(double *a, double *b, double *c, int m, int n) {
 }
 
 /**
-* Calculates element-wise sum of a matrix with a value (using parallel threads on CUDA capable device)
+* Adds a value element-wise to the matrix (using parallel threads on CUDA capable device)
 *
 * @param a the double pointer to first input array
-* @param b the double value to add the array with
+* @param b the double value to add to the array
 * @param c the double pointer to output array
 * @param m the no. of rows in the arrays
 * @param n the no. of cols in the arrays
 * @return void
 */
-__global__ void elemwise_sum(double *a, double b, double *c, int m, int n) {
+__global__ void sum(double *a, double b, double *c, int m, int n) {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -109,7 +110,7 @@ __global__ void elemwise_sum(double *a, double b, double *c, int m, int n) {
 }
 
 /**
-* Calculates element-wise product of a matrix with a value (using parallel threads on CUDA capable device)
+* Multiplies a value element-wise to matrix (using parallel threads on CUDA capable device)
 *
 * @param a the double pointer to first input array
 * @param b the double value to multiply the array with
@@ -118,7 +119,7 @@ __global__ void elemwise_sum(double *a, double b, double *c, int m, int n) {
 * @param n the no. of cols in the arrays
 * @return void
 */
-__global__ void elemwise_prod(double *a, double b, double *c, int m, int n) {
+__global__ void prod(double *a, double b, double *c, int m, int n) {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -131,7 +132,7 @@ __global__ void elemwise_prod(double *a, double b, double *c, int m, int n) {
 }
 
 /**
-* Calculates element-wise maximum of a matrix with a value (using parallel threads on CUDA capable device)
+* Computes the element-wise maximum ofs a matrix and a value (using parallel threads on CUDA capable device)
 *
 * @param a the double pointer to first input array
 * @param b the double value to check maximum against
@@ -140,7 +141,7 @@ __global__ void elemwise_prod(double *a, double b, double *c, int m, int n) {
 * @param n the no. of cols in the arrays
 * @return void
 */
-__global__ void elemwise_max(double *a, double b, double *c, int m, int n) {
+__global__ void maximum(double *a, double b, double *c, int m, int n) {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -251,7 +252,7 @@ extern "C" {
         cudaFree(d_c);
     }
 
-    void cuda_elemwise_sum(double *a, double b, double *c, int m, int n) {
+    void cuda_sum(double *a, double b, double *c, int m, int n) {
         double *d_a, *d_c;
 
         cudaMallocManaged(&d_a, (m * n) * sizeof(double));
@@ -263,7 +264,7 @@ extern "C" {
         dim3 dimGrid((n / dimBlock.x) + 1, (m / dimBlock.y) + 1, 1);
 
         cudaError_t syncErr, asyncErr;
-        elemwise_sum<<<dimGrid, dimBlock>>>(d_a, b, d_c, m, n);
+        sum<<<dimGrid, dimBlock>>>(d_a, b, d_c, m, n);
         
         syncErr = cudaGetLastError();
         asyncErr = cudaDeviceSynchronize();
@@ -279,7 +280,7 @@ extern "C" {
         cudaFree(d_c);
     }
 
-    void cuda_elemwise_prod(double *a, double b, double *c, int m, int n) {
+    void cuda_prod(double *a, double b, double *c, int m, int n) {
         double *d_a, *d_c;
 
         cudaMallocManaged(&d_a, (m * n) * sizeof(double));
@@ -291,7 +292,7 @@ extern "C" {
         dim3 dimGrid((n / dimBlock.x) + 1, (m / dimBlock.y) + 1, 1);
 
         cudaError_t syncErr, asyncErr;
-        elemwise_prod<<<dimGrid, dimBlock>>>(d_a, b, d_c, m, n);
+        prod<<<dimGrid, dimBlock>>>(d_a, b, d_c, m, n);
         
         syncErr = cudaGetLastError();
         asyncErr = cudaDeviceSynchronize();
@@ -306,8 +307,8 @@ extern "C" {
         cudaFree(d_a);
         cudaFree(d_c);
     }
- 
-    void cuda_elemwise_max(double *a, double b, double *c, int m, int n) {
+
+    void cuda_maximum(double *a, double b, double *c, int m, int n) {
         double *d_a, *d_c;
 
         cudaMallocManaged(&d_a, (m * n) * sizeof(double));
@@ -319,7 +320,7 @@ extern "C" {
         dim3 dimGrid((n / dimBlock.x) + 1, (m / dimBlock.y) + 1, 1);
 
         cudaError_t syncErr, asyncErr;
-        elemwise_max<<<dimGrid, dimBlock>>>(d_a, b, d_c, m, n);
+        maximum<<<dimGrid, dimBlock>>>(d_a, b, d_c, m, n);
         
         syncErr = cudaGetLastError();
         asyncErr = cudaDeviceSynchronize();
@@ -334,4 +335,4 @@ extern "C" {
         cudaFree(d_a);
         cudaFree(d_c);
     }
- }
+}
