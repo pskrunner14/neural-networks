@@ -1,6 +1,6 @@
 import numpy as np
 
-def eval_numerical_gradient(f, x, h=0.0001):
+def eval_numerical_gradient(f, x, h=1e-6):
     """Evaluates gradient df/dx via finite differences:
     df/dx ~ (f(x+h) - f(x-h)) / 2h
     """

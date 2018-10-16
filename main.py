@@ -37,7 +37,7 @@ def main():
     train_log = []
     val_log = []
 
-    for epoch in range(args.epochs):
+    for epoch in range(1, args.epochs + 1):
         for x_batch, y_batch in iterate_minibatches(X_train, y_train, batchsize=args.batch_size, shuffle=True):
             trainer.fit(x_batch, y_batch, lr=args.lr)
         

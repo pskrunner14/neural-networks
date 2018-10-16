@@ -57,11 +57,23 @@ class Dense():
         self.g2_biases = np.zeros_like(self.biases)
 
     def forward(self, inputs):
+        """ Forward pass of the dense layer.
+        Perform an affine transformation:
+            f(x) = <W*x> + b
+            
+        input shape: [batch, input_units] 
+        output shape: [batch, output units]
+        """
         Wx = F.matmul(inputs, self.weights, method=self.method)
         Z = F.matsum(Wx, self.biases, method=self.method)
         return Z
 
     def backward(self, inputs, gradients, **kwargs):
+        """ Backward pass of the layer.
+        Performs a backpropagation step through the layer, with respect to the given input.
+        To compute loss gradients w.r.t input, you need to apply chain rule (backprop):
+            dL / dx  = (dL / dZ) * (dZ / dx)
+        """
         lr = kwargs.get('lr', 0.001)
         gamma = kwargs.get('gamma', 0.9)
         epsilon = kwargs.get('epsilon', 1e-7)
@@ -77,7 +89,6 @@ class Dense():
         grad_weights = F.prod(F.matmul(inputs.T, gradients, method=self.method), 1. / m, method=self.method)
         # dL / db = dL / dZ * dZ / db = gradients * 1
         grad_biases = F.prod(gradients.sum(axis=0), 1. / m, method=self.method)
-
         assert grad_weights.shape == self.weights.shape and grad_biases.shape == self.biases.shape
         
         update_weights = F.prod(grad_weights, lr, method=self.method)
