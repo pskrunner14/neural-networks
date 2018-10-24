@@ -3,7 +3,6 @@ sys.path.append('../')
 
 import unittest
 import numpy as np
-from numpy.linalg import norm
 
 from loss import (
     softmax_crossentropy_with_logits,

@@ -41,7 +41,7 @@ class TestLayers(unittest.TestCase):
         x = np.linspace(-1, 1 , 10 * 32).reshape([10, 32])
         l = Dense(32, 64)
         numeric_grads = eval_numerical_gradient(lambda x: l.forward(x).sum(), x)
-        grads = l.backward(x, np.ones([10, 64]), optim='gd', lr=0, alpha=0.9, epsilon=1e-8)
+        grads = l.backward(x, np.ones([10, 64]), optim='gd', lr=0)
         self.assertTrue(np.allclose(grads, numeric_grads, rtol=1e-5, atol=0), 
             msg="input gradient does not match numeric grad")
 
@@ -57,7 +57,7 @@ class TestLayers(unittest.TestCase):
             layer.weights = np.array(w)
             layer.biases = np.array(b)
             x = np.linspace(-1, 1, 10 * 32).reshape([10, 32])
-            layer.backward(x, np.ones([10, 64]), optim='gd', lr=1, gamma=0.9, epsilon=1e-8)
+            layer.backward(x, np.ones([10, 64]), optim='gd', lr=1)
             return w - layer.weights, b - layer.biases
         w = np.random.randn(32, 64) * np.sqrt(2. / (32 + 64))
         b = np.zeros(64)

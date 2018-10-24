@@ -13,14 +13,14 @@ class Layer:
 
     def __init__(self):
         """Here you can initialize layer parameters (if any) and auxiliary stuff."""
-        pass
+        raise NotImplementedError()
     
     def forward(self, inputs):
         """ Forward pass of the layer.
         Takes input data of shape [batch, input_units], 
         and returns output data [batch, output_units]
         """
-        pass
+        raise NotImplementedError()
 
     def backward(self, inputs, gradients, **kwargs):
         """ Backward pass of the layer.
@@ -32,7 +32,7 @@ class Layer:
             If our layer has parameters (e.g. dense layer, conv layer etc.), 
             you also need to update them here using dL / dZ.
         """
-        pass
+        raise NotImplementedError()
 
 class Dense(Layer):
     """ Dense layer.
@@ -63,8 +63,6 @@ class Dense(Layer):
     
     def backward(self, inputs, gradients, **kwargs):
         lr = kwargs.get('lr', 0.001)
-        gamma = kwargs.get('gamma', 0.9)
-        epsilon = kwargs.get('epsilon', 1e-7)
         optim = kwargs.get('optim', 'rmsprop')
 
         # dL / dx = dL / dZ * dZ / dx = gradients * W
@@ -84,6 +82,8 @@ class Dense(Layer):
         update_biases = lr * grad_biases
 
         if optim == 'rmsprop':
+            gamma = kwargs.get('gamma', 0.9)
+            epsilon = kwargs.get('epsilon', 1e-7)
             if not hasattr(self, 'g2_weights'):
                 self._init_g2()
             self.g2_weights = (self.g2_weights * gamma) + np.square(grad_weights) * (1 - gamma)
