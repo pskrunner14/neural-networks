@@ -1,10 +1,10 @@
 import sys
-sys.path.append('../')
+sys.path.append('../nn/')
 
 import unittest
 import numpy as np
 
-from nn import Dense, ReLU
+from layers import Dense, ReLU
 from test_util import eval_numerical_gradient
 
 class TestLayers(unittest.TestCase):

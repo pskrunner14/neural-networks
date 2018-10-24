@@ -1,10 +1,10 @@
 import sys
-sys.path.append('../')
+sys.path.append('../nn/')
 
 import unittest
 import numpy as np
 
-from nn import (
+from loss import (
     softmax_crossentropy_with_logits,
     grad_softmax_crossentropy_with_logits
 )
