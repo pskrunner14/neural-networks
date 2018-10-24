@@ -2,8 +2,8 @@ from __future__ import print_function
 import numpy as np
 import argparse
 
-from data import DataLoader
 from train import Trainer
+from data import load_dataset, iterate_minibatches
 
 np.random.seed(42)
 
@@ -21,7 +21,7 @@ def main():
     args = parse_args()
 
     # dataset
-    X_train, y_train, X_val, y_val, X_test, y_test = DataLoader.load_dataset(flatten=True)
+    X_train, y_train, X_val, y_val, X_test, y_test = load_dataset(flatten=True)
     
     # model layer dimensions
     input_dim = X_train.shape[1]
@@ -34,7 +34,7 @@ def main():
     # loop over epochs
     for epoch in range(1, args.epochs + 1):
         # train batch
-        for x_batch, y_batch in DataLoader.iterate_minibatches(X_train, y_train, batchsize=args.batch_size, shuffle=True):
+        for x_batch, y_batch in iterate_minibatches(X_train, y_train, batchsize=args.batch_size, shuffle=True):
             trainer.fit(x_batch, y_batch, lr=args.lr)
         
         # compute train and val accuracy
