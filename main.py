@@ -22,26 +22,28 @@ def main():
 
     # dataset
     X_train, y_train, X_val, y_val, X_test, y_test = DataLoader.load_dataset(flatten=True)
+    
     # model layer dimensions
     input_dim = X_train.shape[1]
     num_classes = 10
     dims = [input_dim, 100, 200, 200, num_classes]
+
     # model trainer
     trainer = Trainer(dims=dims)
-
-    train_log = []
-    val_log = []
 
     # loop over epochs
     for epoch in range(1, args.epochs + 1):
         # train batch
         for x_batch, y_batch in DataLoader.iterate_minibatches(X_train, y_train, batchsize=args.batch_size, shuffle=True):
             trainer.fit(x_batch, y_batch, lr=args.lr)
+        
         # compute train and val accuracy
-        train_log.append(np.mean(trainer.predict(X_train) == y_train))
-        val_log.append(np.mean(trainer.predict(X_val) == y_val))
+        train_acc = np.mean(trainer.predict(X_train) == y_train)
+        val_acc = np.mean(trainer.predict(X_val) == y_val)
+        
         # log epoch acc and loss
-        print("Epoch[{}/{}]  train acc: {:.4f}   -   val acc: {:.4f}".format(epoch, args.epochs, train_log[-1], val_log[-1]))
+        print("Epoch[{}/{}]  train acc: {:.4f}   -   val acc: {:.4f}".format(epoch, args.epochs, train_acc, val_acc))
+    
     # test
     print('\nTesting on {} samples'.format(len(X_test)))
     accuracy = np.mean(trainer.predict(X_test) == y_test) * 100
