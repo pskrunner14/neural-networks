@@ -2,8 +2,8 @@ from __future__ import print_function
 import numpy as np
 import argparse
 
-from train import Trainer
-from data import load_dataset, iterate_minibatches
+from nn import Trainer
+from nn import load_dataset, iterate_minibatches
 
 np.random.seed(42)
 

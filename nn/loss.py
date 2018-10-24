@@ -1,7 +1,6 @@
 from __future__ import print_function
 
 import autograd.numpy as np
-
 from autograd import elementwise_grad as grad
 
 np.random.seed(42)

@@ -1,15 +1,14 @@
 from __future__ import print_function
 import os
-import dill
 
 import numpy as np
 from autograd import elementwise_grad as grad
 
-from loss import (
+from . import Dense, ReLU
+from . import (
     softmax_crossentropy_with_logits,
     grad_softmax_crossentropy_with_logits
 )
-from layers import Dense, ReLU
 
 np.random.seed(42)
 

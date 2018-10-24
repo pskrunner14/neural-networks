@@ -4,11 +4,11 @@ sys.path.append('../')
 import unittest
 import numpy as np
 
-from loss import (
+from nn import (
     softmax_crossentropy_with_logits,
     grad_softmax_crossentropy_with_logits
 )
-from util import eval_numerical_gradient
+from test_util import eval_numerical_gradient
 
 class TestLoss(unittest.TestCase):
 

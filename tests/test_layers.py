@@ -4,8 +4,8 @@ sys.path.append('../')
 import unittest
 import numpy as np
 
-from layers import Dense, ReLU
-from util import eval_numerical_gradient
+from nn import Dense, ReLU
+from test_util import eval_numerical_gradient
 
 class TestLayers(unittest.TestCase):
 
