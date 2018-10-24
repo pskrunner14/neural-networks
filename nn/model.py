@@ -9,10 +9,11 @@ from . import (
     softmax_crossentropy_with_logits,
     grad_softmax_crossentropy_with_logits
 )
+from . import iterate_minibatches
 
 np.random.seed(42)
 
-class Trainer():
+class Model():
 
     def __init__(self, dims=None):
         if dims is None:
@@ -46,22 +47,24 @@ class Trainer():
         assert len(activations) == len(self._network)
         return activations
 
+    def compile(self, optim, loss):
+        pass
+
     def predict(self, X):
-        """
-        Compute network predictions.
+        """ Compute network predictions.
+
         """
         logits = self._forward(X)[-1]
         return logits.argmax(axis=-1)
 
     def fit(self, X, y, **kwargs):
-        """ Train your network on a given batch of X and y.
-        You first need to run forward to get all layer activations.
-        Then you can run layer.backward going from last to first layer.
+        batch_size = kwargs.get('batch_size', 64)
+        loss = []
+        for x_batch, y_batch in iterate_minibatches(X, y, batchsize=batch_size, shuffle=True):
+            loss.append(self._fit_batch(x_batch, y_batch, **kwargs))
+        return np.mean(loss)
 
-        After you called backward for all layers, all Dense layers 
-        have already made one gradient step.
-        """
-
+    def _fit_batch(self, X, y, **kwargs):
         # Get the layer activations
         layer_activations = self._forward(X)
         layer_inputs = [X] + layer_activations  #layer_input[i] is an input for network[i]

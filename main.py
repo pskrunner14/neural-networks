@@ -2,8 +2,8 @@ from __future__ import print_function
 import numpy as np
 import argparse
 
-from nn import Trainer
-from nn import load_dataset, iterate_minibatches
+from nn import Model
+from nn import load_dataset
 
 np.random.seed(42)
 
@@ -28,25 +28,24 @@ def main():
     num_classes = 10
     dims = [input_dim, 100, 200, 200, num_classes]
 
-    # model trainer
-    trainer = Trainer(dims=dims)
+    # create model
+    model = Model(dims=dims)
 
     # loop over epochs
     for epoch in range(1, args.epochs + 1):
         # train batch
-        for x_batch, y_batch in iterate_minibatches(X_train, y_train, batchsize=args.batch_size, shuffle=True):
-            trainer.fit(x_batch, y_batch, lr=args.lr)
+        train_loss = model.fit(X_train, y_train, batch_size=args.batch_size, lr=args.lr)
         
         # compute train and val accuracy
-        train_acc = np.mean(trainer.predict(X_train) == y_train)
-        val_acc = np.mean(trainer.predict(X_val) == y_val)
+        train_acc = np.mean(model.predict(X_train) == y_train)
+        val_acc = np.mean(model.predict(X_val) == y_val)
         
         # log epoch acc and loss
-        print("Epoch[{}/{}]  train acc: {:.4f}   -   val acc: {:.4f}".format(epoch, args.epochs, train_acc, val_acc))
+        print("Epoch[{}/{}]   train loss: {:.4f}   -   train acc: {:.4f}   -   val acc: {:.4f}".format(epoch, args.epochs, train_loss, train_acc, val_acc))
     
     # test
     print('\nTesting on {} samples'.format(len(X_test)))
-    accuracy = np.mean(trainer.predict(X_test) == y_test) * 100
+    accuracy = np.mean(model.predict(X_test) == y_test) * 100
     print('test acc: {:.4f}'.format(accuracy))
 
 if __name__ == '__main__':
