@@ -45,15 +45,16 @@ class Model():
 
     def fit(self, X, y, val_data, verbose=True, **kwargs):
         epochs = kwargs.get('epochs', 20)
+        print('Training model for {} epochs'.format(epochs))
+
         for epoch in range(1, epochs + 1):
             # train batch
             train_loss, train_acc = self.__fit_epoch(X, y, **kwargs)
-            
             # val loss and accuracy
             logits_val = self.__forward(val_data[0])[-1]
             val_loss = np.mean(softmax_crossentropy_with_logits(logits_val, val_data[1]))
-            val_acc = np.mean(self.predict(val_data[0])==val_data[1])
-
+            val_acc = np.mean(np.argmax(logits_val, axis=-1)==val_data[1])
+            # log info
             if verbose:
                 print('Epoch[{}/{}]   train loss: {:.4f}   -   train acc: {:.4f}   -   val loss: {:.4f}   -   val acc: {:.4f}\n'
                     .format(epoch, epochs, train_loss, train_acc, val_loss, val_acc))
