@@ -43,12 +43,38 @@ class Model():
         logits = self.__forward(X)[-1]
         return logits.argmax(axis=-1)
 
-    def fit(self, X, y, **kwargs):
+    def fit(self, X, y, val_data, verbose=True, **kwargs):
+        epochs = kwargs.get('epochs', 20)
+        for epoch in range(1, epochs + 1):
+            # train batch
+            train_loss, train_acc = self.__fit_epoch(X, y, **kwargs)
+            
+            # val loss and accuracy
+            logits_val = self.__forward(val_data[0])[-1]
+            val_loss = np.mean(softmax_crossentropy_with_logits(logits_val, val_data[1]))
+            val_acc = np.mean(self.predict(val_data[0])==val_data[1])
+
+            if verbose:
+                print('Epoch[{}/{}]   train loss: {:.4f}   -   train acc: {:.4f}   -   val loss: {:.4f}   -   val acc: {:.4f}\n'
+                    .format(epoch, epochs, train_loss, train_acc, val_loss, val_acc))
+
+    def eval(self, X, y, verbose=True):
+        print('Evaluating model on {} samples'.format(X.shape[0]))
+        logits = self.__forward(X)[-1]
+        loss = np.mean(softmax_crossentropy_with_logits(logits, y))
+        acc = np.mean(self.predict(X)==y)
+        if verbose:
+            print('eval loss: {:.4f}   -   eval acc: {:.4f}\n'.format(loss, acc))
+
+    def __fit_epoch(self, X, y, **kwargs):
         batch_size = kwargs.get('batch_size', 64)
         loss = []
+        acc = []
         for x_batch, y_batch in iterate_minibatches(X, y, batchsize=batch_size, shuffle=True):
-            loss.append(self.__fit_batch(x_batch, y_batch, **kwargs))
-        return np.mean(loss)
+            loss_iter, acc_iter = self.__fit_batch(x_batch, y_batch, **kwargs)
+            loss.append(loss_iter)
+            acc.append(acc_iter)
+        return np.mean(loss), np.mean(acc)
 
     def __fit_batch(self, X, y, **kwargs):
         # Get the layer activations
@@ -64,4 +90,5 @@ class Model():
         for l in range(len(self.__network))[::-1]:
             grad_loss = self.__network[l].backward(layer_inputs[l], grad_loss, **kwargs)
 
-        return np.mean(loss)
+        acc = (self.predict(X)==y)
+        return np.mean(loss), np.mean(acc)

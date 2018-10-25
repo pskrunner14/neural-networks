@@ -1,6 +1,14 @@
 from __future__ import print_function
 import numpy as np
+
+# keras import
+import os
+import sys
+stderr = sys.stderr
+sys.stderr = open(os.devnull, 'w')
 import keras
+sys.stderr = stderr
+
 from tqdm import trange
 
 np.random.seed(42)

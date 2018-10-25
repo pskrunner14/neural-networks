@@ -2,9 +2,9 @@ from __future__ import print_function
 import numpy as np
 import argparse
 
-from nn import Model
-from nn import Dense, ReLU
-from nn import load_dataset
+from nn.model import Model
+from nn.layers import Dense, ReLU
+from nn.data import load_dataset
 
 np.random.seed(42)
 
@@ -38,22 +38,12 @@ def main():
     model.add(ReLU())
     model.add(Dense(200, num_classes))
 
-    # loop over epochs
-    for epoch in range(1, args.epochs + 1):
-        # train batch
-        train_loss = model.fit(X_train, y_train, batch_size=args.batch_size, lr=args.lr)
-        
-        # compute train and val accuracy
-        train_acc = np.mean(model.predict(X_train) == y_train)
-        val_acc = np.mean(model.predict(X_val) == y_val)
-        
-        # log epoch acc and loss
-        print("Epoch[{}/{}]   train loss: {:.4f}   -   train acc: {:.4f}   -   val acc: {:.4f}".format(epoch, args.epochs, train_loss, train_acc, val_acc))
+    # train model
+    model.fit(X_train, y_train, val_data=(X_val, y_val), verbose=True, 
+            epochs=args.epochs, batch_size=args.batch_size, lr=args.lr)
     
-    # test
-    print('\nTesting on {} samples'.format(len(X_test)))
-    accuracy = np.mean(model.predict(X_test) == y_test) * 100
-    print('test acc: {:.4f}'.format(accuracy))
+    # evaluate model
+    model.eval(X_test, y_test, verbose=True)
 
 if __name__ == '__main__':
     try:
