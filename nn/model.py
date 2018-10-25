@@ -58,10 +58,11 @@ class Model():
         logits = self.__forward(X)[-1]
         return logits.argmax(axis=-1)
 
-    def fit(self, X, y, val_data, verbose=True, **kwargs):
+    def fit(self, X, y, val_data, **kwargs):
         epochs = kwargs.get('epochs', 20)
-        print('Training model for {} epochs'.format(epochs))
+        verbose = kwargs.get('verbose', True)
 
+        print('Training model for {} epochs'.format(epochs))
         for epoch in range(1, epochs + 1):
             # train batch
             train_loss, train_acc = self.__fit_epoch(X, y, **kwargs)
@@ -74,11 +75,15 @@ class Model():
                 print('Epoch[{}/{}]   train loss: {:.4f}   -   train acc: {:.4f}   -   val loss: {:.4f}   -   val acc: {:.4f}\n'
                     .format(epoch, epochs, train_loss, train_acc, val_loss, val_acc))
 
-    def eval(self, X, y, verbose=True):
+    def eval(self, X, y, **kwargs):
+        verbose = kwargs.get('verbose', True)
+
         print('Evaluating model on {} samples'.format(X.shape[0]))
+        # eval loss and accuracy
         logits = self.__forward(X)[-1]
         loss = np.mean(softmax_crossentropy_with_logits(logits, y))
         acc = np.mean(self.predict(X)==y)
+        # log info
         if verbose:
             print('eval loss: {:.4f}   -   eval acc: {:.4f}\n'.format(loss, acc))
 
