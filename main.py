@@ -3,7 +3,7 @@ import numpy as np
 import argparse
 
 from nn.model import Model
-from nn.layers import Dense, ReLU
+from nn.layers import Dense
 from nn.data import load_dataset
 
 np.random.seed(42)
@@ -30,12 +30,9 @@ def main():
 
     # create model
     model = Model()
-    model.add(Dense(input_dim, 100))
-    model.add(ReLU())
-    model.add(Dense(100, 200))
-    model.add(ReLU())
-    model.add(Dense(200, 200))
-    model.add(ReLU())
+    model.add(Dense(input_dim, 100), activation='relu')
+    model.add(Dense(100, 200), activation='relu')
+    model.add(Dense(200, 200), activation='relu')
     model.add(Dense(200, num_classes))
 
     # train model

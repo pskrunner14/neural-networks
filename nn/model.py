@@ -4,6 +4,7 @@ import os
 import numpy as np
 from autograd import elementwise_grad as grad
 
+from . import ReLU
 from . import (
     softmax_crossentropy_with_logits,
     grad_softmax_crossentropy_with_logits
@@ -18,13 +19,23 @@ class Model():
         self.name = name
         self.__network = []
 
-    def add(self, layer): 
+    def add(self, layer, activation=None):
+        """ Adds a layer to the network.
+        
+        Args:
+            layer (Layer): layer module to add to the network module list.
+        """
         self.__network.append(layer)
+        if activation == 'relu':
+            self.__network.append(ReLU())
 
     def __forward(self, X):
-        """ Compute activations of all network layers by 
-        applying them sequentially. Return a list of activations 
-        for each layer. Make sure last activation corresponds to network logits.
+        """ Forward pass of the model.
+
+        Args:
+            X (numpy.ndarray): the input to the model for one forward pass.
+        Returns:
+            list: activations of the network layers.
         """
         activations = []
         A = X
@@ -39,6 +50,10 @@ class Model():
     def predict(self, X):
         """ Compute network predictions.
 
+        Args:
+            X (numpy.ndarray): the input to the model to compute y_hat.
+        Returns:
+            numpy.ndarray: logits for the final layer activations.
         """
         logits = self.__forward(X)[-1]
         return logits.argmax(axis=-1)
@@ -87,9 +102,10 @@ class Model():
         loss = softmax_crossentropy_with_logits(logits, y)
         grad_loss = grad_softmax_crossentropy_with_logits(logits, y)
 
+        acc = (self.predict(X)==y)
+
         # Backpropagate the gradients to all layers
         for l in range(len(self.__network))[::-1]:
             grad_loss = self.__network[l].backward(layer_inputs[l], grad_loss, **kwargs)
 
-        acc = (self.predict(X)==y)
         return np.mean(loss), np.mean(acc)
