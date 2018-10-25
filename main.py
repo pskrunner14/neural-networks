@@ -3,6 +3,7 @@ import numpy as np
 import argparse
 
 from nn import Model
+from nn import Dense, ReLU
 from nn import load_dataset
 
 np.random.seed(42)
@@ -26,10 +27,16 @@ def main():
     # model layer dimensions
     input_dim = X_train.shape[1]
     num_classes = 10
-    dims = [input_dim, 100, 200, 200, num_classes]
 
     # create model
-    model = Model(dims=dims)
+    model = Model()
+    model.add(Dense(input_dim, 100))
+    model.add(ReLU())
+    model.add(Dense(100, 200))
+    model.add(ReLU())
+    model.add(Dense(200, 200))
+    model.add(ReLU())
+    model.add(Dense(200, num_classes))
 
     # loop over epochs
     for epoch in range(1, args.epochs + 1):
