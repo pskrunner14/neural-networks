@@ -1,21 +1,24 @@
 from __future__ import print_function
-import numpy as np
 
 # keras import
 import os
 import sys
+
+import numpy as np
+from tqdm import trange
+
 stderr = sys.stderr
 sys.stderr = open(os.devnull, 'w')
 import keras
 sys.stderr = stderr
 
-from tqdm import trange
 
 np.random.seed(42)
 
+
 def load_dataset(flatten=False):
     (X_train, y_train), (X_test, y_test) = keras.datasets.mnist.load_data()
-    
+
     # normalize x
     X_train = X_train.astype(float) / 255.
     X_test = X_test.astype(float) / 255.
