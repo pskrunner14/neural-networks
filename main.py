@@ -1,14 +1,9 @@
-from __future__ import print_function
 import argparse
-
 import numpy as np
 
 from nn.model import Model
 from nn.layers import Dense
 from nn.data import load_dataset
-
-np.random.seed(42)
-
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Training Configuration')
@@ -36,11 +31,20 @@ def main():
     model.add(Dense(input_dim, 100), activation='relu')
     model.add(Dense(100, 200), activation='relu')
     model.add(Dense(200, 200), activation='relu')
-    model.add(Dense(200, num_classes))
+    model.add(Dense(200, num_classes), activation='softmax')
+
+    # compile model
+    model.compile(optim='rmsprop', loss='categorical_crossentropy')
 
     # train model
-    model.fit(X_train, y_train, val_data=(X_val, y_val), verbose=True,
-              epochs=args.epochs, batch_size=args.batch_size, lr=args.lr)
+    model.fit(
+        X_train, y_train, 
+        val_data=(X_val, y_val), 
+        lr=args.lr,
+        batch_size=args.batch_size, 
+        epochs=args.epochs, 
+        verbose=True,
+    )
 
     # evaluate model
     model.eval(X_test, y_test, verbose=True)

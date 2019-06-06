@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/pskrunner14/neural-networks.svg?branch=master)](https://travis-ci.org/pskrunner14/neural-networks) [![Maintainability](https://api.codeclimate.com/v1/badges/c4736d207700f8b85167/maintainability)](https://codeclimate.com/github/pskrunner14/neural-networks/maintainability) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/405bf4d442c741a8822615f39c655f7f)](https://www.codacy.com/app/pskrunner14/neural-networks?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=pskrunner14/neural-networks&amp;utm_campaign=Badge_Grade)
 
+**Note: this project is currently under development.**
+
 This is a Neural Network built from scratch using only Numpy for numerical computation.
 
 ## Getting Started

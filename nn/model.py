@@ -18,7 +18,7 @@ class Model():
 
     def __init__(self, name='model'):
         self.name = name
-        self.__network = []
+        self.__graph = []
 
     def add(self, layer, activation=None):
         """ Adds a layer with activation to the network.
@@ -27,9 +27,9 @@ class Model():
             layer (Layer): layer module to add to the network module list.
             activation (str): type of the activation to add after the layer.
         """
-        self.__network.append(layer)
+        self.__graph.append(layer)
         if activation == 'relu':
-            self.__network.append(ReLU())
+            self.__graph.append(ReLU())
 
     def __forward(self, X):
         """ Forward pass of the model.
@@ -42,12 +42,15 @@ class Model():
         activations = []
         A = X
 
-        for layer in self.__network:
+        for layer in self.__graph:
             activations.append(layer.forward(A))
             A = activations[-1]
 
-        assert len(activations) == len(self.__network)
+        assert len(activations) == len(self.__graph)
         return activations
+
+    def compile(self, loss='softmax', optim='sgd'):
+        pass
 
     def predict(self, X):
         """ Compute network predictions.
@@ -64,7 +67,8 @@ class Model():
         epochs = kwargs.get('epochs', 20)
         verbose = kwargs.get('verbose', True)
 
-        print('Training model for {} epochs'.format(epochs))
+        if verbose:
+            print('Training model for {} epochs'.format(epochs))
         for epoch in range(1, epochs + 1):
             # train batch
             train_loss, train_acc = self.__fit_epoch(X, y, **kwargs)
@@ -101,21 +105,19 @@ class Model():
         acc = (self.predict(X) == y)
 
         # Backpropagate the gradients to all layers
-        for l in range(len(self.__network))[::-1]:
-            grad_loss = self.__network[l].backward(
-                layer_inputs[l], grad_loss, **kwargs)
+        for l in range(len(self.__graph))[::-1]:
+            grad_loss = self.__graph[l].backward(layer_inputs[l], grad_loss, **kwargs)
 
         return np.mean(loss), np.mean(acc)
 
     def eval(self, X, y, **kwargs):
         verbose = kwargs.get('verbose', True)
-
-        print('Evaluating model on {} samples'.format(X.shape[0]))
+        if verbose:
+            print('Evaluating model on {} samples'.format(X.shape[0]))
         # eval loss and accuracy
         logits = self.__forward(X)[-1]
         loss = np.mean(softmax_crossentropy_with_logits(logits, y))
         acc = np.mean(np.argmax(logits, axis=-1) == y)
         # log info
-        if verbose:
-            print('eval loss: {:.4f}   -   eval acc: {:.4f}\n'
+        print('eval loss: {:.4f}   -   eval acc: {:.4f}\n'
                   .format(loss, acc))
