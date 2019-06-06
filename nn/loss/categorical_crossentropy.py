@@ -8,7 +8,7 @@ class CategoricalCrossentropy(Loss):
     def __init__(self):
         super().__init__()
 
-    def forward(self, softmax, targets):
+    def forward(self, probs, targets):
         pass
 
     def backward(self):
