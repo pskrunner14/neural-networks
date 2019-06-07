@@ -26,8 +26,10 @@ class RMSprop(Optim):
     def step(self):
         assert self._vars is not None, 'no trainable variables'
         assert self._g2_vars is not None, 'no optim specific params'
+        # TODO (1): multithread this loop
+        # can be optimized for faster computation
         for i in range(len(self._vars)):
-            grad = self._vars[i].grad
-            updates = self._lr * grad
-            self._g2_vars[i] = (self._g2_vars[i] * self._gamma) + np.square(grad) * (1 - self._gamma)
-            self._vars[i].data -= updates / (np.sqrt(self._g2_vars[i]) + self._epsilon)
+            self._g2_vars[i] = (self._g2_vars[i] * self._gamma) + \
+                               (np.square(self._vars[i].grad) * (1 - self._gamma))
+            coeff = self._lr / (np.sqrt(self._g2_vars[i]) + self._epsilon)
+            self._vars[i].update(coeff)

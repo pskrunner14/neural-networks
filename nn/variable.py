@@ -1,4 +1,5 @@
 import numpy as np
+np.random.seed(42)
 
 class Variable:
     # keeps count of unnamed variables 
@@ -16,7 +17,8 @@ class Variable:
         self.requires_grad = requires_grad
 
     def __repr__(self):
-        return f'Variable: {self.name} {self._data.shape}' + '[requires_grad]' if self.requires_grad else ''
+        return f'Variable: {self.name} {self._data.shape}' + \
+                '[requires_grad]' if self.requires_grad else ''
 
     @property
     def data(self):
@@ -32,6 +34,7 @@ class Variable:
 
     @property
     def grad(self):
+        assert self.requires_grad, "variable doesn't support differentiation"
         return self._grad
 
     @grad.setter
@@ -43,4 +46,9 @@ class Variable:
         
     @grad.deleter
     def grad(self):
+        assert self.requires_grad, "variable doesn't support differentiation"
         self._grad = None
+
+    def update(self, coeff):
+        self.data -= coeff * self.grad
+        del self.grad

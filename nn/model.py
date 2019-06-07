@@ -2,25 +2,40 @@ import numpy as np
 np.random.seed(42)
 
 from .data import iterate_minibatches
-from ._cgraph import CGraph
 
+from .layers import (
+    Layer,
+    Dense
+)
 from .activations import (
     ReLU,
     Sigmoid,
     Softmax
+)
+from .optim import (
+    Optim,
+    SGD,
+    RMSprop
+)
+from .loss import (
+    Loss,
+    CategoricalCrossentropy
 )
 
 class Model():
 
     def __init__(self, name='model'):
         self.name = name
-        self._graph = CGraph()
+        self._graph = []
 
     def __repr__(self):
         return repr(self._graph)
 
     def __str__(self):
         return str(self._graph)
+
+    def __call__(self, X):
+        return self._forward(X)[-1]
 
     def add(self, layer, activation=None):
         """ Adds a layer with activation to the network.
@@ -29,13 +44,17 @@ class Model():
             layer (Layer): layer module to add to the network module list.
             activation (str): type of the activation to add after the layer.
         """
-        self._graph.push(layer)
-        if activation == 'relu':
-            self._graph.push(ReLU())
-        elif activation == 'sigmoid':
-            self._graph.push(Sigmoid())
-        elif activation == 'softmax':
-            self._graph.push(Softmax())
+        self._graph.append(layer)
+        if isinstance(activation, str):
+            if activation == 'relu':
+                self._graph.append(ReLU())
+            elif activation == 'sigmoid':
+                self._graph.append(Sigmoid())
+            elif activation == 'softmax':
+                self._graph.append(Softmax())
+        else:
+            assert isinstance(activation, Layer), \
+                   'activation is not an nn.layers.Layer object'
 
     def _forward(self, X):
         """ Forward pass of the model.
@@ -55,8 +74,30 @@ class Model():
         assert len(activations) == len(self._graph)
         return activations
 
-    def compile(self, loss='softmax', optim='sgd'):
-        pass
+    def compile(self, optim='sgd', loss='softmax'):
+        if isinstance(optim, str):
+            if optim == 'sgd':
+                self._optim = SGD()
+            elif optim == 'rmsprop':
+                self._optim = RMSprop()
+        else:
+            assert isinstance(optim, Optim), \
+                   'optimizer is not an nn.optim.Optim object'
+
+        trainable_vars = []
+        for layer in self._graph:
+            if layer.type == 'layer':
+                trainable_vars.extend(layer.trainable_vars)
+        for var in trainable_vars:
+            assert var.requires_grad == True, 'trainable variable does not support differentiation'
+        self._optim.vars = trainable_vars
+
+        if isinstance(loss, str):
+            if loss == 'categorical_crossentropy':
+                self._loss = CategoricalCrossentropy()
+        else:
+            assert isinstance(loss, Loss), \
+                   'loss is not an nn.loss.Loss object'
 
     def predict(self, X):
         """ Compute network predictions.
@@ -66,8 +107,8 @@ class Model():
         Returns:
             numpy.ndarray: logits for the final layer activations.
         """
-        logits = self._forward(X)[-1]
-        return logits.argmax(axis=-1)
+        probs = self._forward(X)[-1]
+        return np.argmax(probs, axis=1)
 
     def fit(self, X, y, val_data, **kwargs):
         epochs = kwargs.get('epochs', 20)
@@ -99,20 +140,19 @@ class Model():
     def _fit_batch(self, X, y, **kwargs):
         # Get the layer activations
         layer_activations = self._forward(X)
-        # layer_input[i] is an input for network[i]
-        layer_inputs = [X] + layer_activations
-        logits = layer_activations[-1]
+        probs = layer_activations[-1]
 
         # Compute the loss and the initial gradient
-        loss = self._loss(logits, y)
-        grad_loss = self._loss.backward(logits, y)
+        loss = self._loss(probs, y)
+        grad_loss = self._loss.backward(y)
 
-        acc = (self.predict(X) == y)
+        # Accumulate the gradients in all layer vars
+        for i in range(len(self._graph))[::-1]:
+            grad_loss = self._graph[i].backward(grad_loss)
+        # Update the vars using the gradients
+        self._optim.step()
 
-        # Backpropagate the gradients to all layers
-        for l in range(len(self._graph))[::-1]:
-            grad_loss = self._graph[l].backward(layer_inputs[l], grad_loss, **kwargs)
-
+        acc = np.argmax(probs, axis=1) == y
         return np.mean(loss), np.mean(acc)
 
     def eval(self, X, y, **kwargs):
@@ -120,9 +160,9 @@ class Model():
         if verbose:
             print('Evaluating model on {} samples'.format(X.shape[0]))
         # eval loss and accuracy
-        logits = self._forward(X)[-1]
-        loss = np.mean(self._loss(logits, y))
-        acc = np.mean(np.argmax(logits, axis=-1) == y)
+        probs = self._forward(X)[-1]
+        loss = np.mean(self._loss(probs, y))
+        acc = np.mean(np.argmax(probs, axis=1) == y)
         # log info
         print('eval loss: {:.4f}   -   eval acc: {:.4f}\n'
                   .format(loss, acc))

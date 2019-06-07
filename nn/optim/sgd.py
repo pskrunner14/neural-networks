@@ -20,4 +20,4 @@ class SGD(Optim):
     def step(self):
         assert self._vars is not None, 'no trainable variables'
         for i in range(len(self._vars)):
-            self._vars[i].data -= self._lr * self._vars[i].grad
+            self._vars[i].update(self._lr)
