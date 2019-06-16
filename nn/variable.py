@@ -8,13 +8,17 @@ class Variable:
 
     def __init__(self, data: np.array, name: str='x', requires_grad: bool=True):
         if name == 'x':
-            cls._n += 1
-            self.name = f'x{cls._n}'
+            self.name = self.__get_unique_id__()
         else:
             self.name = name
         self._data = data
         self._grad = None
         self.requires_grad = requires_grad
+
+    @classmethod
+    def __get_unique_id__(cls):
+        cls._n += 1
+        return f'x{cls._n}'
 
     def __repr__(self):
         return f'Variable: {self.name} {self._data.shape}' + \
