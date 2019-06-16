@@ -4,12 +4,12 @@ np.random.seed(42)
 class Variable:
     # keeps count of unnamed variables 
     # so there are only uniques on the graph
-    n = 0
+    _n = -1
 
     def __init__(self, data: np.array, name: str='x', requires_grad: bool=True):
         if name == 'x':
-            self.name = f'x{n}'
-            n += 1
+            cls._n += 1
+            self.name = f'x{cls._n}'
         else:
             self.name = name
         self._data = data
